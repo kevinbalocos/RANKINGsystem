@@ -1,0 +1,154 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+
+* {
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #fff;
+  color: white;
+  height: 100vh;
+}
+
+.navbar {
+  background: rgb(10, 120, 72);
+  padding: 10px 20px;
+  border-bottom: 1px solid #e0e0e0;
+  width: 100%;
+}
+
+.navbar-toggler {
+  color: white;
+  background-color: white;
+}
+
+.navbar-brand img {
+  height: 40px;
+  width: auto;
+}
+
+.slideshow-container {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  background-color: white;
+  height: 950px;
+}
+
+.slideshow-container img {
+  width: 100%;
+  height: 100%;
+  display: none;
+}
+
+.slideshow-container img.active {
+  display: block;
+}
+
+.prev,
+.next {
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  width: auto;
+  padding: 16px;
+  margin-top: -22px;
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+  transition: 0.6s ease;
+  border-radius: 0 3px 3px 0;
+  user-select: none;
+}
+
+.next {
+  right: 0;
+  border-radius: 3px 0 0 3px;
+}
+
+.prev:hover,
+.next:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.content-wrapper {
+  position: absolute;
+  top: 200px;
+  left: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+
+/* Add this style to move the slideshow down */
+.slideshow-container.shift-down {
+  margin-top: 1080px;
+  /* Adjust this value as needed */
+  transition: margin-top 1s ease;
+}
+
+/* Form styles */
+.form-container {
+  display: none;
+  width: 100%;
+  max-width: 400px;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background: rgb(10, 120, 72);
+  position: relative;
+  /* Ensure it's positioned relative to the content wrapper */
+}
+
+.form-container.active {
+  display: block;
+}
+
+.form-container input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+}
+
+button.bn5 {
+  background-color: white;
+  color: rgb(10, 120, 72);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 500;
+  margin-top: 10px;
+}
+
+button.bn5:hover {
+  background-color: #8DECB4;
+  color: white;
+}
+
+a.bn5 {
+  color: white;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 10px 0;
+}
+
+a.bn5:hover {
+  color: #ced4da;
+  text-decoration: underline;
+}
+
+.nav-link {
+  color: white;
+}
+
+.nav-link:hover {
+  color: #ced4da;
+}

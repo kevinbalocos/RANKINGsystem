@@ -1,0 +1,91 @@
+.auth-container {
+    display: flex;
+    flex-wrap: wrap;
+    max-width: 900px;
+    margin: 50px;
+    margin-left: 50px;
+    padding: 30px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.auth-container:hover {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.auth-container .form-container {
+    flex: 1;
+    padding-right: 20px;
+}
+
+.auth-container .image-container {
+    flex: 1;
+    text-align: center;
+}
+
+.auth-container h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 1.8rem;
+    color: #2f4f4f;
+}
+
+.auth-container form .form-control {
+    margin-bottom: 20px;
+    border-radius: 5px;
+    border: 1px solid #66cdaa;
+    background-color: #f9f9f9;
+}
+
+.auth-container form button {
+    width: 100%;
+    background-color: #2f4f4f;
+    color: #fff;
+    border: none;
+    padding: 12px;
+    border-radius: 5px;
+    font-size: 1.1rem;
+    transition: background-color 0.3s ease;
+}
+
+.auth-container form button:hover {
+    background-color: #4f8a8b;
+}
+
+
+.input-group {
+    margin-bottom: 15px;
+}
+
+.input-group-append {
+    border-left: none;
+}
+
+.alert {
+    display: none;
+    margin-top: 15px;
+}
+
+.alert.active {
+    display: block;
+}
+
+/* Responsive design adjustments */
+@media (max-width: 768px) {
+    .auth-container {
+        flex-direction: column;
+        padding: 20px;
+    }
+
+    .auth-container h2 {
+        font-size: 1.6rem;
+    }
+}
+
+/* Slideshow Styles (now fixed) */
+.image-container img {
+    width: 100%;
+    height: auto;
+}
