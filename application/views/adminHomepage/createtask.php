@@ -259,6 +259,7 @@
                 </table>
             </div>
         </div>
+        asd
 
         <!-- Right section (form to create tasks) -->
         <div class="right-section flex-1 bg-white p-6">
