@@ -93,7 +93,7 @@
 
             <!-- SSS File -->
             <form action="<?= base_url('conAdmin/uploadSSSFile') ?>" method="post" enctype="multipart/form-data"
-                onsubmit="showToast(event, 'SSS File Uploaded Successfully!');"
+                onsubmit="handleFileUpload(event, this, 'SSS File Uploaded Successfully!');"
                 class="darkmode bg-gray-50 p-6 rounded-lg shadow-md hover:shadow-xl transition duration-300 ease-in-out">
                 <label for="sss_file" class="block text-sm font-medium text-gray-700 mb-2">SSS File:</label>
                 <div class="relative">
@@ -114,7 +114,7 @@
 
             <!-- PAGIBIG File -->
             <form action="<?= base_url('conAdmin/uploadPagibigFile') ?>" method="post" enctype="multipart/form-data"
-                onsubmit="showToast(event, 'PAGIBIG File Uploaded Successfully!');"
+                onsubmit="handleFileUpload(event, this, 'PAGIBIG File Uploaded Successfully!');"
                 class="darkmode bg-gray-50 p-6 rounded-lg shadow-md hover:shadow-xl transition duration-300 ease-in-out">
                 <label for="pagibig_file" class="block text-sm font-medium text-gray-700 mb-2">PAGIBIG File:</label>
                 <div class="relative">
@@ -132,6 +132,7 @@
                         onclick="resetFileInput('pagibig_file')">Clear</button>
                 </div>
             </form>
+
 
         </div>
     </div>
@@ -271,31 +272,41 @@
 
     </script>
     <script>
-        // Handle File Upload with AJAX
-        function handleFileUpload(event, form) {
-            event.preventDefault(); // Prevent the default form submission
-            const formData = new FormData(form); // Create a FormData object with the form data
+        // Handle File Upload with AJAX and Toast
+        function handleFileUpload(event, form, successMessage) {
+            event.preventDefault(); // Prevent default form submission
+            const formData = new FormData(form); // Create a FormData object
 
-            // Perform the AJAX request
+            // Perform AJAX request
             fetch(form.action, {
                 method: 'POST',
-                body: formData
+                body: formData,
             })
-                .then(response => response.json())
-                .then(data => {
+                .then((response) => response.json())
+                .then((data) => {
                     if (data.status === 'success') {
-                        // Show success toast
-                        showToast(data.message, false);
+                        showToast(successMessage, false); // Show success toast
+                        form.reset(); // Reset the form after successful upload
                     } else {
-                        // Show error toast
-                        showToast(data.message, true);
+                        showToast(data.message || 'An error occurred during upload.', true); // Show error toast
                     }
                 })
-                .catch(error => {
-                    // Show error toast if request fails
-                    showToast('An error occurred while uploading the file. Please try again.', true);
+                .catch((error) => {
+                    showToast('An error occurred. Please try again.', true); // Show error toast for unexpected errors
                 });
         }
+
+        // Function to reset file input
+        function resetFileInput(inputId) {
+            const fileInput = document.getElementById(inputId);
+            if (fileInput.files.length > 0) {
+                fileInput.value = ''; // Clear file input
+                showToast('File input cleared.', false); // Show toast for clearing
+            } else {
+                showToast('No file to clear.', true); // Show error toast if no file is selected
+            }
+        }
+
 
         // Show Toastify notification
         function showToast(message, isError = false) {

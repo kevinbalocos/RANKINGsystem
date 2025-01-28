@@ -69,18 +69,7 @@
         </div>
     </div>
 
-    <!-- SweetAlert2 Notification -->
-    <script>
-        <?php if (isset($error) && $error != '') { ?>
-            Swal.fire({
-                icon: 'error',
-                title: 'Oops...',
-                text: "<?= $error; ?>",
-                timer: 3000,
-                showConfirmButton: false
-            });
-        <?php } ?>
-    </script>
+   
 
 </body>
 

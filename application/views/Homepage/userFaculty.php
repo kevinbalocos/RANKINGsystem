@@ -56,7 +56,6 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             overflow: hidden;
             background-color: white;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
         .card:hover {
@@ -67,7 +66,6 @@
         .card-header {
             display: flex;
             align-items: center;
-            padding: 1.5rem;
             border-bottom: 1px solid #e5e7eb;
         }
 
@@ -86,75 +84,67 @@
 </head>
 
 <body class="bg-gray-50">
-
-    <header class="bg-white shadow px-6 py-4">
-        <h1 class="text-3xl font-bold text-gray-900">Faculty Directory</h1>
+    <header class="bg-white shadow px-6 py-3">
+        <h1 class="text-2xl font-bold text-gray-800">RANK REQUIREMENTS</h1>
     </header>
 
     <div class="main-container">
-        <!-- Left Section -->
         <div class="left-section space-y-8">
-
-            <!-- Faculty Members Section -->
-            <div class="text-center">
-                <h2 class="text-3xl font-semibold text-gray-800 mb-4">The Team</h2>
-                <p class="lg:w-2/3 mx-auto leading-relaxed text-lg text-gray-600">Meet the faculty members who are part
-                    of
-                    this great institution. They bring expertise, passion, and dedication to their roles.</p>
-            </div>
-
-            <!-- Faculty Member Cards -->
-            <div class="grid-container">
-                <!-- Current logged-in user (your profile) -->
-                <div class="card">
-                    <div class="bg-white card-header">
-                        <img class="image_size"
-                            src="<?= base_url($user['uploaded_profile_image'] ?? 'uploads/default_profiles/default_profile.avif'); ?>"
-                            alt="Profile Image">
-                        <div>
-                            <h3><?= htmlspecialchars($user['username']); ?>
-                            </h3>
-                            <p><strong>Rank:</strong> <?= htmlspecialchars($user['rank'] ?: 'Not Yet Assigned'); ?></p>
-                            <p><strong>Faculty:</strong>
-                                <?= htmlspecialchars($user['faculty'] ?: 'Not Yet Assigned'); ?></p>
-                        </div>
-                    </div>
+            <div class="card-header">
+                <img class="image_size"
+                    src="<?= base_url($user['uploaded_profile_image'] ?? 'uploads/default_profiles/default_profile.avif'); ?>"
+                    alt="Profile Image">
+                <div>
+                    <h3><?= htmlspecialchars($user['username']); ?></h3>
+                    <p><strong>Rank:</strong> <?= htmlspecialchars($user['rank'] ?: 'Not Yet Assigned'); ?></p>
+                    <p><strong>Rank Label:</strong> <?= htmlspecialchars($rank_label); ?></p>
+                    <p><strong>Faculty:</strong> <?= htmlspecialchars($user['faculty'] ?: 'Not Yet Assigned'); ?></p>
                 </div>
-
-                <!-- Fellow faculty members -->
-                <?php foreach ($fellow_faculty_members as $faculty_member): ?>
-                    <?php if ($faculty_member['id'] != $user['id'] && !empty($faculty_member['faculty'])) { ?>
-                        <div class="bg-white card">
-                            <div class="card-header">
-                                <img class="image_size"
-                                    src="<?= base_url($faculty_member['uploaded_profile_image'] ?? 'uploads/default_profiles/default_profile.avif'); ?>"
-                                    alt="Profile Image">
-                                <div>
-                                    <h3>
-                                        <?= htmlspecialchars($faculty_member['username']); ?>
-                                    </h3>
-                                    <p><strong>Rank:</strong>
-                                        <?= htmlspecialchars($faculty_member['rank'] ?: 'Not Yet Assigned'); ?></p>
-                                    <p><strong>Faculty:</strong>
-                                        <?= htmlspecialchars($faculty_member['faculty'] ?: 'Not Yet Assigned'); ?></p>
-                                </div>
-                            </div>
-                        </div>
-                    <?php } ?>
-                <?php endforeach; ?>
             </div>
-        </div>
 
-        <!-- Right Section -->
-        <div class="right-section p-6">
-            <div class="bg-white shadow-md p-4 rounded-lg">
-                <h3 class="text-lg font-semibold text-gray-800">Quick Actions</h3>
-                <ul class="space-y-4 mt-4">
-                </ul>
+            <!-- Next Rank Requirement -->
+            <div>
+                <h3 class="font-semibold text-lg">Next Rank Requirements:</h3>
+                <p><strong>To be <?= htmlspecialchars($next_rank_order); ?>, submit:</strong></p>
+                <p><?= htmlspecialchars($next_rank_label); ?></p>
             </div>
+
+            <form method="POST" enctype="multipart/form-data" action="<?= base_url('controllerFaculty/submitFile') ?>">
+                <input type="file" name="file" required>
+                <button type="submit">Submit File</button>
+            </form>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>File</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (is_array($file_submissions) && count($file_submissions) > 0): ?>
+                        <?php foreach ($file_submissions as $submission): ?>
+                            <tr>
+                                <td><a href="<?= base_url($submission['file_path']); ?>">View File</a></td>
+                                <td><?= $submission['approved'] ? 'Approved' : 'Pending'; ?></td>
+                                <td>
+                                    <?php if (!$submission['approved']): ?>
+                                        <a href="<?= base_url('controllerFaculty/approveFile/' . $submission['id']); ?>">Approve</a>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="3">No file submissions found.</td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+
         </div>
     </div>
-
 </body>
 
 </html>

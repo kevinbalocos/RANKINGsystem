@@ -105,28 +105,27 @@ class Auth extends CI_Controller
         $password = $this->input->post('password');
         $confirmPassword = $this->input->post('confirm_password');
 
-        // Check if the password and confirm password match
         if ($password !== $confirmPassword) {
             $this->load->view('forlogin/frontpage');  // Include frontpage layout
             $this->load->view('forlogin/viewregister', ['error' => 'Passwords do not match']);
         } else {
-            // Passwords match, proceed with registration
-            // Check if the email already exists in the database
             $existingUser = $this->auth_model->getUserByEmail($data['email']);
 
             if ($existingUser) {
-                // Load the registration page with SweetAlert2 error
                 $this->load->view('forlogin/viewregister', ['error' => 'Email is already in use']);
             } else {
                 if ($this->auth_model->register($data)) {
-                    redirect(base_url('auth'));  // Redirect to login page or home
+                    // Successfully registered, pass a success message
+                    $this->session->set_flashdata('success', 'Successfully registered!');
+                    redirect(base_url('auth'));  // Redirect to login page
                 } else {
-                    $this->load->view('forlogin/frontpage');  // Include frontpage layout
+                    $this->load->view('forlogin/frontpage');
                     $this->load->view('forlogin/viewregister', ['error' => 'Registration failed']);
                 }
             }
         }
     }
+
 
 
     public function aboutranking()

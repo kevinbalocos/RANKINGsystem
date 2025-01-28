@@ -191,6 +191,35 @@ class conAdmin extends CI_Controller
             echo json_encode(['status' => 'error', 'message' => 'Task ID is required']);
         }
     }
+    public function bulkDeleteTasks()
+    {
+        $input = json_decode(file_get_contents('php://input'), true);
+        $taskIds = $input['taskIds'];
+
+        if (!empty($taskIds) && is_array($taskIds)) {
+            // Start transaction
+            $this->db->trans_start();
+
+            // Delete related records in the user_uploadedtask table
+            $this->db->where_in('task_id', $taskIds);
+            $this->db->delete('user_uploadedtask');
+
+            // Delete tasks from the tasks table
+            $this->db->where_in('id', $taskIds);
+            $this->db->delete('tasks');
+
+            // Complete transaction
+            $this->db->trans_complete();
+
+            if ($this->db->trans_status() === FALSE) {
+                echo json_encode(['status' => 'error', 'message' => 'Failed to delete tasks']);
+            } else {
+                echo json_encode(['status' => 'success']);
+            }
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Invalid task IDs']);
+        }
+    }
 
 
 

@@ -99,40 +99,45 @@
 
                 <li class="nav-link">
                     <a class="darkmode_sidebar_links" href="javascript:void(0);" onclick="loadUserDashboard()">
-                        <i class='darkmode_sidebar_links bx bxs-dashboard icon'></i>
+                        <i class="darkmode_sidebar_links bx bx-home-circle icon"></i> <!-- Dashboard icon -->
                         <span class="text nav-text">DASHBOARD</span>
                     </a>
                 </li>
+
                 <li class="nav-link">
                     <a class="darkmode_sidebar_links" href="javascript:void(0);" onclick="loadAttendanceContent()">
-                        <i class='darkmode_sidebar_links bx bx-bell icon'></i>
+                        <i class="darkmode_sidebar_links bx bx-calendar-check icon"></i> <!-- Attendance icon -->
                         <span class="text nav-text">ATTENDANCE</span>
                     </a>
                 </li>
 
                 <li class="nav-link">
                     <a class="darkmode_sidebar_links" href="javascript:void(0);" onclick="loadUserTasksContent()">
-                        <i class='darkmode_sidebar_links bx bx-task icon'></i>
+                        <i class="darkmode_sidebar_links bx bx-list-check icon"></i> <!-- Tasks icon -->
                         <span class="text nav-text">TASKS</span>
                     </a>
                 </li>
 
                 <li class="nav-link">
                     <a class="darkmode_sidebar_links" href="javascript:void(0);" onclick="loadRequirementStatus()">
-                        <i class='darkmode_sidebar_links bx bx-bell icon'></i>
+                        <i class="darkmode_sidebar_links bx bx-clipboard icon"></i> <!-- Requirement status icon -->
                         <span class="text nav-text">REQUIREMENT STATUS</span>
                     </a>
                 </li>
 
                 <li class="nav-link">
                     <a class="darkmode_sidebar_links" href="javascript:void(0);" onclick="loadFacultyContent()">
-                        <i class='darkmode_sidebar_links bx bxs-user-badge icon'></i>
+                        <i class="darkmode_sidebar_links bx bx-book icon"></i> <!-- Book icon -->
                         <span class="text nav-text">FACULTY</span>
                     </a>
                 </li>
+            
+
+
+
                 <li class="nav-link">
                     <a class="darkmode_sidebar_links" href="javascript:void(0);" onclick="loadProfileContent()">
-                        <i class='darkmode_sidebar_links bx bxs-user-badge icon'></i>
+                        <i class="darkmode_sidebar_links bx bx-user-circle icon"></i> <!-- Profile icon -->
                         <span class="text nav-text">PROFILE</span>
                     </a>
                 </li>

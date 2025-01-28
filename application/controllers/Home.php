@@ -79,6 +79,16 @@ class Home extends CI_Controller
 
         $user_id = $this->session->userdata('user_id');
         $data['user'] = $this->auth_model->getUserById($user_id);
+        // Fetch uploaded files for the logged-in user
+        $uploaded_files = $this->db->get_where('userrequirements', ['user_id' => $user_id])->result_array();
+
+        // Count the total number of uploaded, approved, and pending files
+        $totalUploaded = count($uploaded_files);
+        $pendingFiles = $this->db->where(['user_id' => $user_id, 'status' => 'pending'])->count_all_results('userrequirements');
+        $approvedFiles = $this->db->where(['user_id' => $user_id, 'status' => 'approved'])->count_all_results('userrequirements');
+
+        // Calculate progress (based on the approved files count)
+        $progress = ($totalUploaded > 0) ? ($approvedFiles / $totalUploaded) * 100 : 0;
 
         // Handle profile update form submission
         if ($this->input->post('update_profile')) {
@@ -90,6 +100,11 @@ class Home extends CI_Controller
             $this->uploadProfileImage();
             $data['user'] = $this->auth_model->getUserById($user_id); // Refresh user data
         }
+        $data['uploaded_files'] = $uploaded_files;
+        $data['totalUploaded'] = $totalUploaded;
+        $data['pendingFiles'] = $pendingFiles;
+        $data['approvedFiles'] = $approvedFiles;
+        $data['progress'] = $progress;
 
         $this->load->view('Homepage/clientprofile', $data);
     }
@@ -231,6 +246,7 @@ class Home extends CI_Controller
     }
 
 
+    
 
 
 

@@ -34,7 +34,7 @@
             flex: 1;
             background-color: #f9fafb;
             border-left: 1px solid #e5e7eb;
-            max-width: 350px;
+            max-width: 700px;
         }
 
         th,
@@ -102,70 +102,210 @@
                 </table>
             </div>
         </div>
-        <!-- #region -->
-         asd
         <!-- Right Section -->
-        <div class="right-section w-1/3 bg-white border-l px-6 py-4">
-            <h3 class="text-lg font-semibold text-gray-700 mb-4">Quick Actions</h3>
-            <div class="space-y-4">
-                <button class="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                    onclick="bulkRemoveRank()">
-                    Remove Rank
-                </button>
-                <button class="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                    onclick="bulkRemoveFaculty()">
-                    Remove Faculty
-                </button>
-                <div>
-                    <select id="bulk-rank" class="w-full px-3 py-2 border rounded-md mb-2">
-                        <option value="">-- Select Rank --</option>
-                        <option value="Professor">Professor</option>
-                        <option value="Assistant Professor">Assistant Professor</option>
-                        <option value="Lecturer">Lecturer</option>
-                        <option value="Dean">Dean</option>
-                    </select>
-                    <button class="w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-                        onclick="bulkAssignRank()">
-                        Assign Rank
-                    </button>
+        <div class="right-section bg-white border-l px-6 py-6 space-y-6">
+            <!-- Section Title -->
+            <h3 class="text-lg font-semibold text-gray-800 mb-6">Quick Actions</h3>
+
+            <!-- Two-Column Layout for Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <!-- Card: Add Rank -->
+                <div class="bg-white shadow-lg rounded-lg p-6">
+                    <h4 class="text-sm font-medium text-gray-700 mb-2">Add Rank</h4>
+                    <form id="add-rank-form" class="space-y-4">
+                        <input type="text"
+                            class="w-full px-1 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:outline-none"
+                            id="rank" name="rank" placeholder="Enter new rank" required>
+                        <button
+                            class="w-full px-1 py-1 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition duration-150"
+                            type="submit">Add Rank</button>
+                    </form>
                 </div>
-                <div>
-                    <select id="bulk-faculty" class="w-full px-3 py-2 border rounded-md mb-2">
-                        <option value="">-- Select Faculty --</option>
-                        <option value="Faculty of CSS">Faculty of CSS</option>
-                        <option value="Faculty of Engineering">Faculty of Engineering</option>
-                        <option value="Faculty of Arts">Faculty of Arts</option>
-                        <option value="Faculty of Science">Faculty of Science</option>
-                    </select>
-                    <button class="w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-                        onclick="bulkAssignFaculty()">
-                        Assign Faculty
-                    </button>
+
+                <!-- Card: Add Faculty -->
+                <div class="bg-white shadow-lg rounded-lg p-6">
+                    <h4 class="text-sm font-medium text-gray-700 mb-2">Add Faculty</h4>
+                    <form id="add-faculty-form" class="space-y-4">
+                        <input type="text"
+                            class="w-full px-1 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:outline-none"
+                            id="faculty" name="faculty" placeholder="Enter new faculty" required>
+                        <button
+                            class="w-full px-1 py-1 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition duration-150"
+                            type="submit">Add Faculty</button>
+                    </form>
+                </div>
+
+
+                <!-- Card: Bulk Actions -->
+                <div class="bg-white shadow-lg rounded-lg p-6 space-y-6">
+                    <h4 class="text-sm font-medium text-gray-700 mb-2">Bulk Actions</h4>
+
+                    <!-- Assign Rank -->
                     <div class="space-y-4">
-                        <h3 class="text-lg font-semibold text-gray-700 mb-4">Add New</h3>
-                        <form action="<?= base_url('controllerFaculty/addRank'); ?>" method="POST" class="space-y-2">
-                            <input type="text" name="rank" placeholder="Enter new rank"
-                                class="w-full px-3 py-2 border rounded-md" required>
-                            <button type="submit"
-                                class="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                                Add Rank
-                            </button>
-                        </form>
-                        <form action="<?= base_url('controllerFaculty/addFaculty'); ?>" method="POST" class="space-y-2">
-                            <input type="text" name="faculty" placeholder="Enter new faculty"
-                                class="w-full px-3 py-2 border rounded-md" required>
-                            <button type="submit"
-                                class="w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
-                                Add Faculty
-                            </button>
-                        </form>
+                        <select id="bulk-rank"
+                            class="w-full px-1 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:outline-none">
+                            <option value="">-- Select Rank --</option>
+                            <?php foreach ($ranks as $rank): ?>
+                                <option value="<?= $rank['name']; ?>"><?= $rank['name']; ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <button
+                            class="w-full px-1 py-1 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition duration-150"
+                            onclick="bulkAssignRank()">
+                            Assign Rank
+                        </button>
                     </div>
 
+                    <!-- Assign Faculty -->
+                    <div class="space-y-4">
+                        <select id="bulk-faculty"
+                            class="w-full px-1 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:outline-none">
+                            <option value="">-- Select Faculty --</option>
+                            <?php foreach ($faculties as $faculty): ?>
+                                <option value="<?= $faculty['name']; ?>"><?= $faculty['name']; ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <button
+                            class="w-full px-1 py-1 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition duration-150"
+                            onclick="bulkAssignFaculty()">
+                            Assign Faculty
+                        </button>
+                    </div>
+
+                    <!-- Remove Rank -->
+                    <button
+                        class="w-full px-1 py-1 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition duration-150"
+                        onclick="bulkRemoveRank()">
+                        Remove Rank
+                    </button>
+
+                    <!-- Remove Faculty -->
+                    <button
+                        class="w-full px-1 py-1 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition duration-150"
+                        onclick="bulkRemoveFaculty()">
+                        Remove Faculty
+                    </button>
                 </div>
+
+                <!-- Card: Delete Rank -->
+                <div class="bg-white shadow-lg rounded-lg p-6">
+                    <h4 class="text-sm font-medium text-gray-700 mt-5 mb-2">Delete Rank</h4>
+                    <select id="delete-rank"
+                        class="w-full px-1 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:outline-none mb-2">
+                        <option value="">-- Select Rank --</option>
+                        <?php foreach ($ranks as $rank): ?>
+                            <option value="<?= $rank['id']; ?>"><?= $rank['name']; ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <button
+                        class="w-full px-1 py-1 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition duration-150"
+                        onclick="deleteRank()">
+                        Delete Rank
+                    </button>
+                    <!-- Card: Delete Faculty -->
+                    <h4 class="text-sm font-medium text-gray-700 mb-2">Delete Faculty</h4>
+                    <select id="delete-faculty"
+                        class="w-full px-1 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:outline-none mb-2">
+                        <option value="">-- Select Faculty --</option>
+                        <?php foreach ($faculties as $faculty): ?>
+                            <option value="<?= $faculty['id']; ?>"><?= $faculty['name']; ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <button
+                        class="w-full px-1 py-1 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition duration-150"
+                        onclick="deleteFaculty()">
+                        Delete Faculty
+                    </button>
+                </div>
+
+
             </div>
         </div>
+        <script>
+            function deleteRank() {
+                const selectedRankId = document.getElementById('delete-rank').value;
+
+                if (selectedRankId) {
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: "You want to delete this rank!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Yes, delete it!',
+                        cancelButtonText: 'Cancel',
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            fetch('<?= base_url('controllerFaculty/deleteRank'); ?>', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ rank_id: selectedRankId })
+                            })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        Swal.fire('Success!', 'Rank deleted successfully!', 'success')
+                                            .then(() => {
+                                                location.reload();  // Reload page after successful action
+                                            });
+                                    } else {
+                                        Swal.fire('Error!', 'Failed to delete rank.', 'error');
+                                    }
+                                });
+                        }
+                    });
+                } else {
+                    Swal.fire('Warning!', 'Please select a rank to delete.', 'warning');
+                }
+            }
+
+            function deleteFaculty() {
+                const selectedFacultyId = document.getElementById('delete-faculty').value;
+
+                if (selectedFacultyId) {
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: "You want to delete this faculty!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Yes, delete it!',
+                        cancelButtonText: 'Cancel',
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            fetch('<?= base_url('controllerFaculty/deleteFaculty'); ?>', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ faculty_id: selectedFacultyId })
+                            })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        Swal.fire('Success!', 'Faculty deleted successfully!', 'success')
+                                            .then(() => {
+                                                location.reload();  // Reload page after successful action
+                                            });
+                                    } else {
+                                        Swal.fire('Error!', 'Failed to delete faculty.', 'error');
+                                    }
+                                });
+                        }
+                    });
+                } else {
+                    Swal.fire('Warning!', 'Please select a faculty to delete.', 'warning');
+                }
+            }
+        </script>
+    </div>
     </div>
 
+    </div>
+
+
+    <!-- Add SweetAlert2 CSS and JS in your head section -->
+
+    <head>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    </head>
 
     <script>
         let selectedUsers = [];
@@ -196,39 +336,63 @@
         }
 
         function bulkRemoveRank() {
-            if (confirm('Are you sure you want to remove the rank for selected users?')) {
-                fetch('<?= base_url('controllerFaculty/bulkRemoveRank'); ?>', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_ids: selectedUsers })
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert('Ranks removed successfully!');
-                        } else {
-                            alert('Failed to remove ranks.');
-                        }
-                    });
-            }
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You want to remove the rank for selected users!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, remove it!',
+                cancelButtonText: 'Cancel',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('<?= base_url('controllerFaculty/bulkRemoveRank'); ?>', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ user_ids: selectedUsers })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire('Success!', 'Ranks removed successfully!', 'success')
+                                    .then(() => {
+                                        location.reload();  // Reload page after successful action
+                                    });
+                            } else {
+                                Swal.fire('Error!', 'Failed to remove ranks.', 'error');
+                            }
+                        });
+                }
+            });
         }
 
         function bulkRemoveFaculty() {
-            if (confirm('Are you sure you want to remove the faculty for selected users?')) {
-                fetch('<?= base_url('controllerFaculty/bulkRemoveFaculty'); ?>', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_ids: selectedUsers })
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert('Faculties removed successfully!');
-                        } else {
-                            alert('Failed to remove faculties.');
-                        }
-                    });
-            }
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You want to remove the faculty for selected users!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, remove it!',
+                cancelButtonText: 'Cancel',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('<?= base_url('controllerFaculty/bulkRemoveFaculty'); ?>', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ user_ids: selectedUsers })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire('Success!', 'Faculties removed successfully!', 'success')
+                                    .then(() => {
+                                        location.reload();  // Reload page after successful action
+                                    });
+                            } else {
+                                Swal.fire('Error!', 'Failed to remove faculties.', 'error');
+                            }
+                        });
+                }
+            });
         }
 
         function bulkAssignRank() {
@@ -243,13 +407,16 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            alert('Ranks assigned successfully!');
+                            Swal.fire('Success!', 'Ranks assigned successfully!', 'success')
+                                .then(() => {
+                                    location.reload();  // Reload page after successful action
+                                });
                         } else {
-                            alert('Failed to assign ranks.');
+                            Swal.fire('Error!', 'Failed to assign ranks.', 'error');
                         }
                     });
             } else {
-                alert('Please select a rank and select at least one user.');
+                Swal.fire('Warning!', 'Please select a rank and at least one user.', 'warning');
             }
         }
 
@@ -265,15 +432,19 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            alert('Faculties assigned successfully!');
+                            Swal.fire('Success!', 'Faculties assigned successfully!', 'success')
+                                .then(() => {
+                                    location.reload();  // Reload page after successful action
+                                });
                         } else {
-                            alert('Failed to assign faculties.');
+                            Swal.fire('Error!', 'Failed to assign faculties.', 'error');
                         }
                     });
             } else {
-                alert('Please select a faculty and select at least one user.');
+                Swal.fire('Warning!', 'Please select a faculty and at least one user.', 'warning');
             }
         }
+
 
         function updateRank(userId, rank) {
             fetch('<?= base_url('controllerFaculty/updateRank'); ?>', {
@@ -287,12 +458,12 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        alert('Rank updated successfully!');
+                        Swal.fire('Success!', 'Rank updated successfully!', 'success');
                     } else {
-                        alert('Failed to update rank.');
+                        Swal.fire('Error!', 'Failed to update rank.', 'error');
                     }
                 })
-                .catch(error => console.error('Error:', error));
+                .catch(error => Swal.fire('Error!', 'An error occurred.', 'error'));
         }
 
         function updateFaculty(userId, faculty) {
@@ -307,13 +478,70 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        alert('Faculty updated successfully!');
+                        Swal.fire('Success!', 'Faculty updated successfully!', 'success');
                     } else {
-                        alert('Failed to update faculty.');
+                        Swal.fire('Error!', 'Failed to update faculty.', 'error');
                     }
                 })
-                .catch(error => console.error('Error:', error));
+                .catch(error => Swal.fire('Error!', 'An error occurred.', 'error'));
         }
+
+    </script>
+    <script>
+        // Handle Add Rank Form Submission
+        // Handle Add Rank Form Submission
+        document.getElementById('add-rank-form').addEventListener('submit', function (event) {
+            event.preventDefault(); // Prevent form from submitting normally
+            let rank = document.getElementById('rank').value;
+
+            // Make AJAX request to add rank
+            fetch('<?= base_url('controllerFaculty/addRank'); ?>', {
+                method: 'POST',
+                body: new URLSearchParams({ 'rank': rank })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire('Success', data.message, 'success')
+                            .then(() => {
+                                location.reload(); // Reload page after success
+                            });
+                    } else {
+                        Swal.fire('Error', data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    Swal.fire('Error', 'An error occurred. Please try again.', 'error');
+                });
+        });
+
+        // Handle Add Faculty Form Submission
+        document.getElementById('add-faculty-form').addEventListener('submit', function (event) {
+            event.preventDefault(); // Prevent form from submitting normally
+            let faculty = document.getElementById('faculty').value;
+
+            // Make AJAX request to add faculty
+            fetch('<?= base_url('controllerFaculty/addFaculty'); ?>', {
+                method: 'POST',
+                body: new URLSearchParams({ 'faculty': faculty })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire('Success', data.message, 'success')
+                            .then(() => {
+                                location.reload(); // Reload page after success
+                            });
+                    } else {
+                        Swal.fire('Error', data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    Swal.fire('Error', 'An error occurred. Please try again.', 'error');
+                });
+        });
+
+
     </script>
 </body>
 

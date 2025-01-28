@@ -205,6 +205,10 @@
                         <tr>
                             <th
                                 class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                <input type="checkbox" id="selectAll">
+                            </th>
+                            <th
+                                class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                 Task Name</th>
                             <th
                                 class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
@@ -227,6 +231,10 @@
                         <?php if (isset($tasks) && is_array($tasks)): ?>
                             <?php foreach ($tasks as $task): ?>
                                 <tr class="hover:bg-gray-50 transition">
+                                    <td class="px-6 py-3">
+                                        <input type="checkbox" class="task-checkbox" value="<?php echo $task['id']; ?>">
+                                    </td>
+
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800" data-column-type="task_name"
                                         data-task-id="<?php echo $task['id']; ?>" onclick="makeEditable(this)">
                                         <?php echo $task['task_name']; ?>
@@ -259,12 +267,15 @@
                 </table>
             </div>
         </div>
-        asd
+
 
         <!-- Right section (form to create tasks) -->
         <div class="right-section flex-1 bg-white p-6">
             <h3 class="text-lg font-medium text-gray-700">Quick Actions</h3>
-            <li><button class="block text-sm text-red-600 hover:text-red-800">Bulk Delete</button></li>
+            <button id="bulkDeleteButton" class="bg-red-500 text-white px-4 py-2 rounded mt-4">
+                Bulk Delete
+            </button>
+
             <div id="editUserForm" class="mt-6"></div>
             <ul class="space-y-4 mt-4"></ul>
             <label for="task_name"
@@ -363,6 +374,52 @@
                 }
             });
         }
+        document.getElementById('bulkDeleteButton').addEventListener('click', function () {
+            const selectedTasks = Array.from(document.querySelectorAll('.task-checkbox:checked'))
+                .map(checkbox => checkbox.value);
+
+            if (selectedTasks.length === 0) {
+                Swal.fire('Error', 'No tasks selected for deletion', 'error');
+                return;
+            }
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: 'You will not be able to undo this action!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete them!',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('<?php echo base_url("conAdmin/bulkDeleteTasks"); ?>', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ taskIds: selectedTasks }),
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                Swal.fire('Deleted!', 'The selected tasks have been deleted.', 'success')
+                                    .then(() => window.location.reload());
+                            } else {
+                                Swal.fire('Error', 'Failed to delete tasks: ' + data.message, 'error');
+                            }
+                        })
+                        .catch(error => {
+                            Swal.fire('Error', 'An error occurred while deleting tasks.', 'error');
+                        });
+                }
+            });
+        });
+
+        // Select/Deselect all checkboxes
+        document.getElementById('selectAll').addEventListener('change', function () {
+            const checkboxes = document.querySelectorAll('.task-checkbox');
+            checkboxes.forEach(checkbox => checkbox.checked = this.checked);
+        });
+
     </script>
 
 </body>

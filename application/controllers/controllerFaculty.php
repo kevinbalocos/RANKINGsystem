@@ -20,44 +20,201 @@ class controllerFaculty extends CI_Controller
 
     public function UserFaculty()
     {
-        // Assuming session holds the logged-in user ID
         $user_id = $this->session->userdata('user_id');
-
-        // Fetch user details
         $user = $this->model_faculty->getUserById($user_id);
 
-        // Fetch all users in the same faculty
-        $fellow_faculty_members = $this->model_faculty->getUsersByFaculty($user['faculty']);
+        // Get the rank label (current rank)
+        $rank_label = $this->getRankLabel($user['rank'] ?? 'Unspecified');
 
-        // Pass user data and fellow faculty members to the view
+        // Get the next rank for the user
+        $next_rank_label = $this->getNextRankLabel($user['rank'] ?? 'Unspecified');
+
+        // Get file submissions for the current user
+        $file_submissions = $this->model_faculty->getFileSubmissionsByUser($user_id);
+
+        // Get the next rank's order (rank order)
+        $next_rank_order = $this->getNextRankOrder($user['rank'] ?? 'Unspecified');
+
+        // Pass the necessary data to the view
         $data['user'] = $user;
-        $data['fellow_faculty_members'] = $fellow_faculty_members;
+        $data['rank_label'] = $rank_label;
+        $data['next_rank_label'] = $next_rank_label; // Pass the next rank's requirement
+        $data['file_submissions'] = $file_submissions; // Add file submissions data
+        $data['next_rank_order'] = $next_rank_order; // Add the next rank order data
 
         $this->load->view('Homepage/userFaculty', $data);
     }
+
+    public function getNextRankOrder($currentRank)
+    {
+        $rankOrder = [
+            'Instructor I',
+            'Instructor II',
+            'Instructor III',
+            'Assistant Professor I',
+            'Assistant Professor II',
+            'Associate Professor I',
+            'Associate Professor II',
+            'Associate Professor III',
+            'Associate Professor IV',
+            'Professor I',
+            'Professor II'
+        ];
+
+        $currentRankIndex = array_search($currentRank, $rankOrder);
+        if ($currentRankIndex !== false && $currentRankIndex + 1 < count($rankOrder)) {
+            return $rankOrder[$currentRankIndex + 1];
+        }
+
+        return 'No next rank available';
+    }
+
+    public function getNextRankLabel($currentRank)
+    {
+        $rankRequirements = [
+            'Instructor I' => 'BS/AB Graduate with Government Examination (CPA, Civil Service, Nursing Board Exam, etc)',
+            'Instructor II' => 'BS/AB with Government Examination and MA/MBA Units',
+            'Instructor III' => 'BS/AB with Government Examination with Complete Academic Requirements, no thesis',
+            'Assistant Professor I' => 'BS/AB with Full MA',
+            'Assistant Professor II' => 'Full MA with Government',
+            'Associate Professor I' => 'Full MA with 3-15 Doctoral Units',
+            'Associate Professor II' => 'Full MA with 18-30 Doctoral Units',
+            'Associate Professor III' => 'Full MA with 33-45 Doctoral Units',
+            'Associate Professor IV' => 'Full MA with over 45 Doctoral Units',
+            'Professor I' => 'Full-fledged Doctor for 10 years',
+            'Professor II' => 'Full-fledged Doctor for 11 years and above'
+        ];
+
+        $rankOrder = [
+            'Instructor I',
+            'Instructor II',
+            'Instructor III',
+            'Assistant Professor I',
+            'Assistant Professor II',
+            'Associate Professor I',
+            'Associate Professor II',
+            'Associate Professor III',
+            'Associate Professor IV',
+            'Professor I',
+            'Professor II'
+        ];
+
+        $currentRankIndex = array_search($currentRank, $rankOrder);
+        if ($currentRankIndex !== false && $currentRankIndex + 1 < count($rankOrder)) {
+            return $rankRequirements[$rankOrder[$currentRankIndex + 1]];
+        }
+
+        return 'No next rank available';
+    }
+
+
+    public function getRankLabel($rank)
+    {
+        switch ($rank) {
+            case 'Instructor I':
+                return 'BS/AB Graduate with Government Examination (CPA, Civil Service, Nursing Board Exam, etc)';
+            case 'Instructor II':
+                return 'BS/AB with Government Examination and MA/MBA Units';
+            case 'Instructor III':
+                return 'BS/AB with Government Examination with Complete Academic Requirements, no thesis';
+            case 'Assistant Professor I':
+                return 'BS/AB with Full MA';
+            case 'Assistant Professor II':
+                return 'Full MA with Government';
+            case 'Associate Professor I':
+                return 'Full MA with 3-15 Doctoral Units';
+            case 'Associate Professor II':
+                return 'Full MA with 18-30 Doctoral Units';
+            case 'Associate Professor III':
+                return 'Full MA with 33-45 Doctoral Units';
+            case 'Associate Professor IV':
+                return 'Full MA with over 45 Doctoral Units';
+            case 'Professor I':
+                return 'Full-fledged Doctor for 10 years';
+            case 'Professor II':
+                return 'Full-fledged Doctor for 11 years and above';
+            default:
+                return 'Unspecified Label';
+        }
+    }
+
+    public function submitFile()
+    {
+        $user_id = $this->session->userdata('user_id');
+        $user = $this->model_faculty->getUserById($user_id);
+
+        $rank = $user['rank'];
+        $label = $this->getRankLabel($rank);
+
+        if ($_FILES['file']['error'] == 0) {
+            $uploadPath = 'uploads/rank_requirements_faculty';
+            $filePath = $uploadPath . $_FILES['file']['name'];
+
+            if (move_uploaded_file($_FILES['file']['tmp_name'], $filePath)) {
+                // Save file and label, set 'approved' to 0
+                $this->model_faculty->saveFileSubmission($user_id, $filePath, $label, 0);  // Add approval status as 0
+
+                echo json_encode(['success' => true, 'message' => 'File uploaded successfully with label: ' . $label]);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Failed to upload file']);
+            }
+        } else {
+            echo json_encode(['success' => false, 'message' => 'No file uploaded or error in file upload']);
+        }
+    }
+
+    public function approveFile($submission_id)
+    {
+        $submission = $this->model_faculty->getFileSubmissionById($submission_id);
+
+        if ($submission) {
+            // Set the file as approved
+            if ($this->model_faculty->approveFileSubmission($submission_id)) {
+                // Optionally: Update user's rank or perform other actions
+                $this->model_faculty->updateUserRankAfterApproval($submission['user_id']); // Call the model method here
+                echo json_encode(['success' => true, 'message' => 'File approved successfully and rank updated.']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Failed to approve file']);
+            }
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Submission not found']);
+        }
+    }
+
+
 
 
     public function addRank()
     {
         $rank = $this->input->post('rank');
-        if ($this->model_faculty->addRank($rank)) {
-            $this->session->set_flashdata('success', 'Rank added successfully!');
+        // Check if the rank already exists
+        if ($this->model_faculty->checkRankExists($rank)) {
+            echo json_encode(['success' => false, 'message' => 'Rank already exists.']);
         } else {
-            $this->session->set_flashdata('error', 'Failed to add rank.');
+            if ($this->model_faculty->addRank($rank)) {
+                echo json_encode(['success' => true, 'message' => 'Rank added successfully!']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Failed to add rank.']);
+            }
         }
-        redirect('conAdmin');
     }
 
     public function addFaculty()
     {
         $faculty = $this->input->post('faculty');
-        if ($this->model_faculty->addFaculty($faculty)) {
-            $this->session->set_flashdata('success', 'Faculty added successfully!');
+        // Check if the faculty already exists
+        if ($this->model_faculty->checkFacultyExists($faculty)) {
+            echo json_encode(['success' => false, 'message' => 'Faculty already exists.']);
         } else {
-            $this->session->set_flashdata('error', 'Failed to add faculty.');
+            if ($this->model_faculty->addFaculty($faculty)) {
+                echo json_encode(['success' => true, 'message' => 'Faculty added successfully!']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Failed to add faculty.']);
+            }
         }
-        redirect('conAdmin');
     }
+
+
 
     public function FacultyAdmin()
     {
@@ -195,6 +352,50 @@ class controllerFaculty extends CI_Controller
             }
         }
     }
+    public function deleteRank()
+    {
+        // Retrieve the JSON data sent by the client
+        $inputData = json_decode($this->input->raw_input_stream, true);
+
+        if (isset($inputData['rank_id'])) {
+            $rankId = $inputData['rank_id'];
+            if ($this->model_faculty->deleteRank($rankId)) {
+                // Rank deleted successfully
+                echo json_encode(['success' => true]);
+            } else {
+                // Failed to delete rank
+                echo json_encode(['success' => false]);
+            }
+        } else {
+            // Invalid input
+            echo json_encode(['success' => false, 'message' => 'Rank ID missing']);
+        }
+    }
+
+
+    public function deleteFaculty()
+    {
+        // Retrieve the JSON data sent by the client
+        $inputData = json_decode($this->input->raw_input_stream, true);
+
+        // Check if faculty ID exists
+        if (isset($inputData['faculty_id'])) {
+            $facultyId = $inputData['faculty_id'];
+
+            // Call the model method to delete the faculty
+            $result = $this->model_faculty->deleteFaculty($facultyId);
+
+            if ($result) {
+                echo json_encode(['success' => true, 'message' => 'Faculty deleted successfully']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Failed to delete faculty']);
+            }
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Faculty ID missing']);
+        }
+    }
+
+
 
 
 

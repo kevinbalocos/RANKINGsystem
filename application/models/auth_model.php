@@ -85,9 +85,17 @@ class Auth_model extends CI_Model
 
     public function deleteUser($user_id)
     {
+        // First, delete related notifications
+        $this->db->where('user_id', $user_id);
+        $this->db->delete('notifications');
+
+        // Now delete the user
         $this->db->where('id', $user_id);
-        return $this->db->delete('users');
+        $this->db->delete('users');
+
+        // Optionally, set a success message
     }
+
 
 
 
@@ -291,6 +299,27 @@ class Auth_model extends CI_Model
     {
         return $this->db->empty_table('attendance_notifications');
     }
+
+    public function deleteAttendanceById($attendance_id)
+    {
+        // Delete the attendance record by its ID
+        $this->db->where('id', $attendance_id);
+        return $this->db->delete('attendance');
+    }
+
+    // Bulk delete method
+    public function deleteBulkAttendance($attendance_ids)
+    {
+        // Ensure attendance_ids is an array
+        if (!empty($attendance_ids)) {
+            // Use CI's `where_in` method to delete multiple records based on IDs
+            $this->db->where_in('id', $attendance_ids);
+            return $this->db->delete('attendance');  // Assuming 'attendance' is the table name
+        }
+        return false;
+    }
+
+
 
 
 }

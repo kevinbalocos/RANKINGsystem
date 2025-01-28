@@ -14,7 +14,6 @@ class controllerAttendance extends CI_Controller
         $this->load->model('admin_model');
         $this->load->model('home_model');
         $this->load->model('model_faculty');
-
         date_default_timezone_set('Asia/Manila');
     }
     // View for assigning shifts
@@ -133,6 +132,39 @@ class controllerAttendance extends CI_Controller
         }
         redirect('conAdmin');
     }
+    public function deleteAttendanceRecords($attendance_id)
+    {
+        // Attempt to delete the attendance record by ID
+        if ($this->auth_model->deleteAttendanceById($attendance_id)) {
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['success' => false]);
+        }
+        exit;
+    }
+
+    // Method for bulk delete
+    public function bulkDeleteAttendance()
+    {
+        // Get the selected attendance IDs from the form
+        $attendance_ids = $this->input->post('attendance_ids');
+
+        if (!empty($attendance_ids)) {
+            // Decode the JSON string to get the array of IDs
+            $attendance_ids = json_decode($attendance_ids, true);
+
+            if ($this->auth_model->deleteBulkAttendance($attendance_ids)) {
+                $this->session->set_flashdata('success', 'Selected attendance records deleted successfully.');
+            } else {
+                $this->session->set_flashdata('error', 'Failed to delete selected attendance records.');
+            }
+        } else {
+            $this->session->set_flashdata('error', 'No attendance records selected.');
+        }
+
+        redirect('conAdmin');
+    }
+
 
 }
 

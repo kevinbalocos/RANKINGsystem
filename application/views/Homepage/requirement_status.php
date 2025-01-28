@@ -172,7 +172,10 @@
         </div>
 
         <div class="right-section">
-            <h2 class="text-xl font-bold text-gray-800 mb-4">Notifications</h2>
+            <h2 class="text-xl font-bold text-gray-800">Notifications</h2>
+            <button class="text-red-500 hover:underline text-sm mb-4"
+                onclick="deleteAllRequirement_statusNotifications()">Delete
+                All Notifications</button>
             <?php if (!empty($notifications)): ?>
                 <ul class="space-y-4">
                     <?php foreach ($notifications as $notification): ?>
@@ -188,8 +191,7 @@
                     <?php endforeach; ?>
 
                 </ul>
-                <button class="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-                    onclick="deleteAllRequirement_statusNotifications()">Delete All Notifications</button>
+
             <?php else: ?>
                 <p class="text-gray-500">No new notifications.</p>
             <?php endif; ?>

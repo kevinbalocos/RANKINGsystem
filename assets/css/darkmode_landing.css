@@ -8,6 +8,7 @@ body.dark {
     --text-light-color: #e5e7eb;
     --hover-color: #374151;
     --table-header-color: #3f3f46;
+    --border-color: #ffffff3a;
 }
 
 body.dark .bg-white
@@ -17,10 +18,16 @@ body.dark .bg-white
 }
 body.dark .table tr,
 body.dark .table td,
-body.dark .table th {
+body.dark .table th,
+body.dark .darkmode_h1 {
     background-color: var(--sidebar-color) !important;
     color: var(--text-light-color) !important;
     border-color: var(--primary-color-light) !important;
+}
+body.dark .darkmode_lines
+{
+    
+    border-color: var(--border-color);    
 }
 
 

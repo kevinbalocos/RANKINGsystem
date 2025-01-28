@@ -158,8 +158,107 @@ class model_faculty extends CI_Model
     {
         return $this->db->insert('faculties', ['name' => $faculty]);
     }
+    public function checkRankExists($rank)
+    {
+        return $this->db->where('name', $rank)->count_all_results('ranks') > 0;
+    }
+
+    public function checkFacultyExists($faculty)
+    {
+        return $this->db->where('name', $faculty)->count_all_results('faculties') > 0;
+    }
+
+    // In the model_faculty (model_faculty.php)
+    public function deleteRank($rankId)
+    {
+        // Ensure this function deletes the correct rank from the database
+        $this->db->where('id', $rankId);
+        return $this->db->delete('ranks'); // Assuming 'ranks' is the table name
+    }
+
+    public function deleteFaculty($facultyId)
+    {
+        // First, make sure there are no users assigned to the faculty
+        $this->db->where('faculty', $facultyId);
+        $this->db->update('users', ['faculty' => null]);  // Clear the faculty assignment for users
+
+        // Now delete the faculty
+        $this->db->where('id', $facultyId);
+        return $this->db->delete('faculties');
+    }
+
+    public function saveFileSubmission($user_id, $filePath, $label)
+    {
+        // Save file and label to the database (adjust according to your DB structure)
+        $data = [
+            'user_id' => $user_id,
+            'file_path' => $filePath,
+            'label' => $label,
+            'submitted_at' => date('Y-m-d H:i:s')
+        ];
+
+        return $this->db->insert('file_submissions', $data);  // Assuming you have a file_submissions table
+    }
+
+    public function getFileSubmissionById($submission_id)
+    {
+        return $this->db->get_where('file_submissions', ['id' => $submission_id])->row_array();
+    }
+
+    public function getFileSubmissionsByUser($user_id)
+    {
+        $this->db->where('user_id', $user_id);
+        $query = $this->db->get('file_submissions'); // Assuming the table is called 'file_submissions'
+        return $query->result_array(); // Return as an array
+    }
+
+    public function approveFileSubmission($submission_id)
+    {
+        return $this->db->update('file_submissions', ['approved' => 1], ['id' => $submission_id]);
+    }
+
+    public function updateUserRankAfterApproval($user_id)
+    {
+        // Logic to update the user's rank after file approval
+        // Example: Update the rank to the next level
+        $user = $this->getUserById($user_id);
+        $new_rank = $this->calculateNextRank($user['rank']);
+        return $this->updateUserRank($user_id, $new_rank);
+    }
+
+    public function calculateNextRank($current_rank)
+    {
+        // This can be customized based on your rank progression logic
+        switch ($current_rank) {
+            case 'Instructor I':
+                return 'Instructor II';
+            case 'Instructor II':
+                return 'Instructor III';
+            case 'Instructor III':
+                return 'Assistant Professor I';
+
+            case 'Assistant Professor I':
+                return 'Assistant Professor II';
+            case 'Assistant Professor II':
+                return 'Associate Professor I';
+
+            case 'Associate Professor I':
+                return 'Associate Professor II';
+            case 'Associate Professor II':
+                return 'Associate Professor III';
+            case 'Associate Professor III':
+                return 'Associate Professor IV';
+            case 'Associate Professor IV':
+                return 'Professor I';
+
+            case 'Professor I ':
+                return 'Professor II';
 
 
+            default:
+                return $current_rank; // No progression
+        }
+    }
 
 
 }

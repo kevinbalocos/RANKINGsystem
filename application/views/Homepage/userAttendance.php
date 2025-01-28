@@ -10,28 +10,59 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         .main-container {
             display: flex;
-            flex-wrap: wrap;
-            height: 100vh;
+            height: calc(100vh - 3rem);
+            /* Adjusting for header height */
+            overflow: hidden;
         }
 
         .left-section,
         .right-section {
-            padding: 2rem;
+            overflow-y: auto;
+            padding: 1rem;
         }
 
         .left-section {
             flex: 2;
-            background-color: #ffffff;
-            border-right: 1px solid #e5e7eb;
         }
 
         .right-section {
+            flex: 1;
             background-color: #f9fafb;
-            width: 300px;
+            border-left: 1px solid #e5e7eb;
+            padding: 1.5rem;
+            max-width: 350px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .right-section h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #4b5563;
+            margin-bottom: 1rem;
+        }
+
+        .right-section p {
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            color: #374151;
+        }
+
+        .right-section .button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .right-section .button-container form {
+            width: 100%;
         }
 
         @media (max-width: 768px) {
@@ -46,26 +77,6 @@
                 border-bottom: 1px solid #e5e7eb;
             }
         }
-
-        .table-container {
-            overflow-y: auto;
-            max-height: 800px;
-            scrollbar-width: thin;
-            scrollbar-color: #66cdaa #f1f1f1;
-        }
-
-        .table-container::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .table-container::-webkit-scrollbar-thumb {
-            background-color: #66cdaa;
-            border-radius: 10px;
-        }
-
-        .table-container::-webkit-scrollbar-track {
-            background-color: #f1f1f1;
-        }
     </style>
 </head>
 
@@ -79,17 +90,10 @@
     <div class="main-container">
         <!-- Left Section -->
         <div class="darkmode left-section m-6 rounded-lg">
-            <h2 class="text-xl font-semibold text-gray-700 mb-4">Your Assigned Shift</h2>
-            <?php if ($shift): ?>
-                <p><strong>Shift Start:</strong> <?= date('h:i A', strtotime($shift['shift_start'])) ?></p>
-                <p><strong>Shift End:</strong> <?= date('h:i A', strtotime($shift['shift_end'])) ?></p>
-            <?php else: ?>
-                <p>No shift assigned yet.</p>
-            <?php endif; ?>
-
-            <h2 class="text-xl font-semibold text-gray-700 mt-8">Attendance Records</h2>
             <?php if ($attendance): ?>
                 <div class="table-container bg-white shadow-lg rounded-lg p-6 overflow-x-auto">
+                    <h2 class="text-xl uppercase text-center font-semibold text-gray-700">Attendance Records</h2>
+
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-100">
                             <tr>
@@ -108,6 +112,9 @@
                                 <th
                                     class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                     Status</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    Time Count</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -135,7 +142,6 @@
                                     <?php endif; ?>
                                 </tr>
                             <?php endforeach; ?>
-
                         </tbody>
                     </table>
                 </div>
@@ -146,9 +152,15 @@
 
         <!-- Right Section -->
         <div class="right-section">
-            <h3 class="text-lg font-medium text-gray-700">Notifications</h3>
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Your Assigned Shift</h2>
+            <?php if ($shift): ?>
+                <p><strong>Shift Start:</strong> <?= date('h:i A', strtotime($shift['shift_start'])) ?></p>
+                <p><strong>Shift End:</strong> <?= date('h:i A', strtotime($shift['shift_end'])) ?></p>
+            <?php else: ?>
+                <p>No shift assigned yet.</p>
+            <?php endif; ?>
 
-            <div class="mt-4">
+            <div class="button-container mt-4">
                 <?php if ($attendance && !$attendance[0]['check_out_time']): ?>
                     <form action="<?= site_url('controllerAttendance/checkOut') ?>" method="POST">
                         <button type="submit"
