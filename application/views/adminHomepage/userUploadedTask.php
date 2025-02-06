@@ -133,9 +133,8 @@
     <div class="main-container">
 
         <!-- Left Section -->
-        <div class="left-section">
-            <!-- Filter Section -->
-            <div class="filter-section">
+        <div class="bg-white left-section">
+            <!-- <div class="filter-section">
                 <h3 class="text-lg font-medium text-gray-700">USER TASKS </h3>
                 <label for="statusFilter" class="text-sm font-medium text-gray-700">Filter by Status:</label>
                 <select id="statusFilter">
@@ -146,7 +145,6 @@
                 </select>
             </div>
 
-            <!-- Task Table -->
             <table>
                 <thead>
                     <tr>
@@ -167,7 +165,6 @@
                                         <?= $file['file_name']; ?>
                                     </a>
                                     <?php
-                                    // If it's a PDF, show a preview link
                                     $file_extension = pathinfo($file['file_name'], PATHINFO_EXTENSION);
                                     if ($file_extension == 'pdf'): ?>
                                         <a href="https://docs.google.com/viewer?url=<?= base_url('uploads/tasks/' . $file['file_name']); ?>"
@@ -198,11 +195,11 @@
                         </tr>
                     <?php endif; ?>
                 </tbody>
-            </table>
+            </table> -->
         </div>
 
         <!-- Right Section -->
-        <div class="right-section bg-white rounded-xl shadow-lg p-6 w-full">
+        <div class="right-section bg-white rounded-xl shadow-lg p-6 w-full overflow-y-auto">
             <h3 class="text-2xl font-semibold text-gray-800 mb-4">Ranking Requirements</h3>
 
             <div class="overflow-x-auto">
@@ -223,34 +220,35 @@
                         <?php if (is_array($file_submissions) && count($file_submissions) > 0): ?>
                             <?php foreach ($file_submissions as $submission): ?>
                                 <tr class="border-b border-gray-200 hover:bg-gray-50 transition duration-200">
-                                    <td class="py-3 px-4 text-sm">
+                                    <td class="bg-white py-3 px-4 text-sm">
                                         <a href="<?= base_url($submission['file_path']); ?>" target="_blank"
                                             class="text-blue-500 hover:underline">
                                             View
                                         </a>
                                     </td>
-                                    <td class="py-3 px-4 text-sm text-gray-700">
+                                    <td class="bg-white bg-white py-3 px-4 text-sm text-gray-700">
                                         <?= htmlspecialchars($submission['username'] ?? 'Unknown User'); ?>
                                     </td>
-                                    <td class="py-3 px-4 text-sm text-gray-700">
+                                    <td class="bg-white py-3 px-4 text-sm text-gray-700">
                                         <?= isset($submission['submitted_at']) ? date("F j, Y, g:i A", strtotime($submission['submitted_at'])) : 'N/A'; ?>
                                     </td>
-                                    <td class="py-3 px-4 text-sm">
+                                    <td class="bg-white py-3 px-4 text-sm">
                                         <span
                                             class="inline-block py-1 px-3 rounded-full text-xs font-semibold 
                                     <?= $submission['approved'] ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'; ?>">
                                             <?= $submission['approved'] ? 'Approved' : 'Pending'; ?>
                                         </span>
                                     </td>
-                                    <td class="py-3 px-4 text-sm text-gray-700"><?= htmlspecialchars($submission['label']); ?>
+                                    <td class="bg-white py-3 px-4 text-sm text-gray-700">
+                                        <?= htmlspecialchars($submission['label']); ?>
                                     </td>
-                                    <td class="py-3 px-4 text-sm text-gray-700">
+                                    <td class="bg-white py-3 px-4 text-sm text-gray-700">
                                         <?= htmlspecialchars($submission['next_rank_label']); ?>
                                     </td>
-                                    <td class="py-3 px-4 text-sm text-gray-700">
+                                    <td class="bg-white py-3 px-4 text-sm text-gray-700">
                                         <?= htmlspecialchars($submission['next_rank_order']); ?>
                                     </td>
-                                    <td class="py-3 px-4 text-sm">
+                                    <td class="bg-white py-3 px-4 text-sm">
                                         <?php if (!$submission['approved']): ?>
                                             <a href="javascript:void(0);" class="approve-link text-green-400 hover:text-green-500"
                                                 data-id="<?= $submission['id']; ?>">

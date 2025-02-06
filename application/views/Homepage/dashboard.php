@@ -171,6 +171,7 @@
                 <h2 class="text-xl font-semibold text-gray-700 mb-4">Weekly Tracker</h2>
                 <canvas id="weeklyLineChart"></canvas> <!-- Canvas for the line graph -->
             </div>
+            
 
             <!-- Uploaded Files Status -->
             <div class="charts bg-white shadow-md rounded-lg p-4 md:col-span-3">

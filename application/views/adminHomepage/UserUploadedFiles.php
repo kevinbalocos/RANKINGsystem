@@ -60,6 +60,10 @@
         .hidden {
             display: none;
         }
+
+        #send_message_des {
+            width: 500px;
+        }
     </style>
 </head>
 
@@ -151,6 +155,10 @@
                             </th>
                             <th
                                 class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                Message User
+                            </th>
+                            <th
+                                class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                 Actions
                             </th>
                         </tr>
@@ -183,7 +191,7 @@
                                             src="<?= base_url($user['uploaded_profile_image'] ?? 'uploads/default_profiles/default_profile.avif'); ?>"
                                             alt="Profile Image">
                                     </td>
-                                    <td colspan="5" class="px-6 py-4 text-center text-gray-500 cursor-pointer"
+                                    <td colspan="10" class="px-6 py-4 text-center text-gray-500 cursor-pointer"
                                         onclick="toggleFiles(<?= $user_id ?>)">
                                         <strong><?= count($files) ?> Files Uploaded (Click to Expand)</strong>
                                     </td>
@@ -238,6 +246,15 @@
                                                 <?= date('F j, Y - g:i A', strtotime($file['updated_at'])) ?>
                                             <?php endif; ?>
                                         </td>
+                                        <!-- Add a section for sending messages to users -->
+                                        <!-- Action: Send message to user -->
+                                        <td class="px-6 py-4">
+                                            <button onclick="openMessageModal(<?= $user_id ?>)"
+                                                class="text-green-300 hover:text-green-400">
+                                                <i class="fas fa-comment-alt"></i>
+                                            </button>
+                                        </td>
+
                                         <td class="px-6 py-4">
                                             <?php if ($file['status'] !== 'approved' && $file['status'] !== 'denied'): ?>
                                                 <button onclick="updateFileStatus(<?= $file['id'] ?>, 'approved')"
@@ -267,55 +284,6 @@
                 </table>
             </div>
         </div>
-        <script>
-            // Function to toggle the visibility of the user's files
-            function toggleFiles(userId) {
-                document.querySelectorAll('.user-files-' + userId).forEach(row => {
-                    row.classList.toggle('hidden');
-                });
-            }
-
-            // Function to select/deselect all files for a specific user
-            function toggleUserFiles(userId) {
-                const isChecked = document.querySelector(`.select-user-checkbox[data-user-id="${userId}"]`).checked;
-                document.querySelectorAll(`.user-${userId}`).forEach(checkbox => {
-                    checkbox.checked = isChecked;
-                });
-            }
-
-            // Function to select/deselect all files
-            function toggleSelectAll() {
-                const isChecked = document.getElementById('selectAll').checked;
-                document.querySelectorAll('.file-checkbox').forEach(checkbox => {
-                    checkbox.checked = isChecked;
-                });
-            }
-
-        </script>
-
-
-        <script>
-            function filterFiles(category) {
-                // Get all the table rows
-                const rows = document.querySelectorAll('#filesTable tr');
-
-                // Loop through each row and apply the filter
-                rows.forEach(row => {
-                    const categoryCell = row.querySelector('td:nth-child(5)'); // Get the category cell (5th column)
-
-                    if (!categoryCell) return; // Skip if there's no category cell (e.g., empty rows)
-
-                    const fileCategory = categoryCell.textContent.trim().toLowerCase();
-
-                    if (category === 'All' || fileCategory === category.toLowerCase()) {
-                        row.style.display = ''; // Show the row
-                    } else {
-                        row.style.display = 'none'; // Hide the row
-                    }
-                });
-            }
-
-        </script>
         <!-- Right Section -->
         <div class="right-section">
 
@@ -341,6 +309,91 @@
             </div>
         </div>
     </div>
+
+    <!-- Message Modal -->
+    <div id="messageModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+        <div id="send_message_des" class="bg-white rounded-lg shadow-lg p-8 mx-96">
+            <h2 class="text-2xl font-semibold mb-6 text-gray-800">Send a Message</h2>
+            <form class="" method="post" action="<?= base_url('conAdmin/sendMessage') ?>">
+                <input type="hidden" id="modalUserId" name="user_id">
+                <textarea name="message" rows="6"
+                    class="form-textarea mt-1 block w-full border border-gray-300 rounded-md p-4 text-gray-700"
+                    placeholder="Enter message here"></textarea>
+                <div class="mt-3 justify-between flex">
+
+                    <button type="submit"
+                        class="text-green-800 bg-green-200 hover:bg-green-400 py-2 px-4 rounded font-medium transition-all duration-300">
+                        Send Message
+                    </button>
+                    <button onclick="closeMessageModal()"
+                        class="bg-yellow-200 text-yellow-800 py-2 px-4 rounded hover:bg-yellow-400">Close</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+
+    <script>
+        // Function to open the message modal
+        function openMessageModal(userId) {
+            document.getElementById('modalUserId').value = userId;
+            document.getElementById('messageModal').classList.remove('hidden');
+        }
+
+        // Function to close the message modal
+        function closeMessageModal() {
+            document.getElementById('messageModal').classList.add('hidden');
+        }
+
+        // Function to toggle the visibility of the user's files
+        function toggleFiles(userId) {
+            document.querySelectorAll('.user-files-' + userId).forEach(row => {
+                row.classList.toggle('hidden');
+            });
+        }
+
+        // Function to select/deselect all files for a specific user
+        function toggleUserFiles(userId) {
+            const isChecked = document.querySelector(`.select-user-checkbox[data-user-id="${userId}"]`).checked;
+            document.querySelectorAll(`.user-${userId}`).forEach(checkbox => {
+                checkbox.checked = isChecked;
+            });
+        }
+
+        // Function to select/deselect all files
+        function toggleSelectAll() {
+            const isChecked = document.getElementById('selectAll').checked;
+            document.querySelectorAll('.file-checkbox').forEach(checkbox => {
+                checkbox.checked = isChecked;
+            });
+        }
+    </script>
+
+
+    <script>
+        function filterFiles(category) {
+            // Get all the table rows
+            const rows = document.querySelectorAll('#filesTable tr');
+
+            // Loop through each row and apply the filter
+            rows.forEach(row => {
+                const categoryCell = row.querySelector('td:nth-child(5)'); // Get the category cell (5th column)
+
+                if (!categoryCell) return; // Skip if there's no category cell (e.g., empty rows)
+
+                const fileCategory = categoryCell.textContent.trim().toLowerCase();
+
+                if (category === 'All' || fileCategory === category.toLowerCase()) {
+                    row.style.display = ''; // Show the row
+                } else {
+                    row.style.display = 'none'; // Hide the row
+                }
+            });
+        }
+
+    </script>
+
     <script>
         function updateFileStatus(fileId, status) {
             Swal.fire({

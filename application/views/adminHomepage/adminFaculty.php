@@ -140,10 +140,10 @@
 
                 <!-- Card: Bulk Actions -->
                 <div class="bg-white shadow-lg rounded-lg p-6 space-y-6">
-                    <h4 class="text-sm font-medium text-gray-700 mb-2">Bulk Actions</h4>
+                    <h4 class="darkmode_h1 text-sm font-medium text-gray-700 mb-2">Bulk Actions</h4>
 
                     <!-- Assign Rank -->
-                    <div class="space-y-4">
+                    <!-- <div class="space-y-4">
                         <select id="bulk-rank"
                             class="w-full px-1 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:outline-none">
                             <option value="">-- Select Rank --</option>
@@ -156,7 +156,7 @@
                             onclick="bulkAssignRank()">
                             Assign Rank
                         </button>
-                    </div>
+                    </div> -->
 
                     <!-- Assign Faculty -->
                     <div class="space-y-4">
@@ -175,11 +175,11 @@
                     </div>
 
                     <!-- Remove Rank -->
-                    <button
+                    <!-- <button
                         class="w-full px-1 py-1 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition duration-150"
                         onclick="bulkRemoveRank()">
                         Remove Rank
-                    </button>
+                    </button> -->
 
                     <!-- Remove Faculty -->
                     <button

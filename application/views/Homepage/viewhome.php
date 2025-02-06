@@ -106,7 +106,8 @@
             <div class="menu">
                 <li class="search-box">
                     <i class='bx bx-search icon'></i>
-                    <input type="search" id="search-bar" placeholder="Search" oninput="filterTasks()">
+                    <input class="py-2 px-3 text-left text-small font-semibold  uppercase tracking-wider" type="search"
+                        id="search-bar" placeholder="Search" oninput="filterTasks()">
                 </li>
                 <li class="nav-link">
                     <a class="darkmode_sidebar_links" href="javascript:void(0);" onclick="loaduserDashboard()">
@@ -134,12 +135,12 @@
                         <span class="text nav-text">FACULTY MANUAL</span>
                     </a>
                 </li>
-                <li class="nav-link">
+                <!-- <li class="nav-link">
                     <a class="darkmode_sidebar_links" href="javascript:void(0);" onclick="loadUserTasksContent()">
-                        <i class="darkmode_sidebar_links bx bx-list-check icon"></i> <!-- Tasks icon -->
+                        <i class="darkmode_sidebar_links bx bx-list-check icon"></i> 
                         <span class="text nav-text">TASKS</span>
                     </a>
-                </li>
+                </li> -->
 
                 <li class="nav-link">
                     <a class="darkmode_sidebar_links" href="javascript:void(0);" onclick="loadRequirementStatus()">
@@ -216,10 +217,15 @@
                 <div id="notificationDropdown"
                     class="notifications_design hidden absolute right-0 mt-2 w-192 bg-white shadow-lg rounded-lg z-10">
                     <div class="p-4">
-                        <h3 class="font-bold text-lg">Notifications</h3>
+                        <h3 class="font-bold text-lg flex space-x-2 px-1 py-2 justify-between">Notifications
+                            <button class=" text-green-800 hover:bg-green-300 text-green-800 rounded px-2"
+                                onclick="markNotificationsRead()">Mark all as read</button>
+                            <!-- Delete All Notifications Button -->
+                            <button class="    text-red-800 hover:bg-red-300 rounded px-2 "
+                                onclick="deleteAll_ViewHome_Notifications()">Delete all notifications</button>
+                        </h3>
                         <ul class="mt-2">
-                            <!-- Notifications for Requirements -->
-                            <?php foreach ($notifications_requirements as $notification): ?>
+                            <?php foreach ($notifications as $notification): ?>
                                 <li class="bg-gray-100 p-2 mb-2 rounded flex justify-between items-center">
                                     <div>
                                         <p><?= htmlspecialchars($notification['message']) ?></p>
@@ -227,12 +233,36 @@
                                             <?= date('F j, Y, g:i a', strtotime($notification['created_at'])) ?>
                                         </p>
                                     </div>
-                                    <!-- <button onclick="deleteNotification(<?= $notification['id'] ?>, 'requirements')"
-                                        class="text-red-500 hover:text-red-700">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button> -->
                                 </li>
                             <?php endforeach; ?>
+
+                            <!-- Notifications for Requirements -->
+                            <!-- <?php foreach ($notifications_requirements as $notification): ?>
+                                <li class="bg-gray-100 p-2 mb-2 rounded flex justify-between items-center">
+                                    <div>
+                                        <p><?= htmlspecialchars($notification['message']) ?></p>
+                                        <p class="text-sm text-gray-500">
+                                            <?= date('F j, Y, g:i a', strtotime($notification['created_at'])) ?>
+                                        </p>
+                                    </div>
+                                    <button onclick="deleteNotification(<?= $notification['id'] ?>, 'requirements')"
+                                        class="text-red-500 hover:text-red-700">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </li>
+                            <?php endforeach; ?> -->
+
+                            <!-- <?php foreach ($notifications_requirements as $notification): ?>
+                                <li class="bg-gray-100 p-2 mb-2 rounded flex justify-between items-center">
+                                    <div>
+                                        <p><?= htmlspecialchars($notification['message']) ?></p>
+                                        <p class="text-sm text-gray-500">
+                                            <?= date('F j, Y, g:i a', strtotime($notification['created_at'])) ?>
+                                        </p>
+                                    </div>
+                                </li>
+                            <?php endforeach; ?> -->
+
 
                             <?php foreach ($notifications_rankup as $notification): ?>
                                 <li id="notification-<?= $notification['id'] ?>"
@@ -253,12 +283,6 @@
 
                         </ul>
 
-                        <button
-                            class="w-full mt-4 bg-green-200 text-green-800 hover:bg-green-300 text-green-800 py-2 rounded"
-                            onclick="markNotificationsRead()">Mark all as read</button>
-                        <!-- Delete All Notifications Button -->
-                        <button class="w-full mt-4 bg-red-200 text-red-800 hover:bg-red-300 py-2 rounded"
-                            onclick="deleteAll_ViewHome_Notifications()">Delete all notifications</button>
 
                     </div>
                 </div>

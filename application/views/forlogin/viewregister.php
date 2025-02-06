@@ -54,12 +54,20 @@
                             <option value="Female">Female</option>
                             <option value="Other">Other</option>
                         </select>
+                        <div class="input-group">
+                            <select name="role" class="form-control" required>
+                                <option value="user">User</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="input-group">
                         <input type="date" name="birth_date" class="form-control" placeholder="Birth Date" required>
                     </div>
                     <button class="bn5" type="submit">Register</button>
                 </form>
+
+
 
                 <div class="login-link">
                     Already Have an Account? <a class="bn5" id="login" href="<?php echo base_url('auth'); ?>">Login</a>

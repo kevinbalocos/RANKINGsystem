@@ -22,7 +22,7 @@ class Auth extends CI_Controller
             'smtp_host' => 'ssl://smtp.gmail.com',
             'smtp_port' => 465,
             'smtp_user' => 'erankingsystem@gmail.com', // Your email
-            'smtp_pass' => 'xcgs aayk sabg smwd', // Your password (or App Password)
+            'smtp_pass' => 'xcgs aayk sabg smwd',
             'mailtype' => 'html',
             'charset' => 'utf-8',
             'newline' => "\r\n"
@@ -43,45 +43,81 @@ class Auth extends CI_Controller
         $this->load->view('adminHomepage/approve_users_account', $data);
     }
 
-    public function approve_user($user_id)
+    public function approve_user()
     {
+        $user_id = $this->input->post('user_id');
         $user = $this->auth_model->getUserById($user_id);
 
         if ($user) {
             $this->auth_model->updateUserStatus($user_id, 'approved');
 
             // Send approval email
-            $subject = "Account Approved";
-            $message = "Hello " . $user['username'] . ",<br><br>Your account has been approved. You can now log in.<br><br>Thank you!";
-
+            $subject = "Account Approved - Welcome to Our Platform!";
+            $message = "
+            <html>
+            <body>
+                <p>Dear " . $user['username'] . ",</p>
+                <p>We are pleased to inform you that your account has been successfully approved. You can now log in and start using our platform. Please use your credentials to access all the features we offer.</p>
+                <p>If you have any questions or need assistance, feel free to reach out to us. We are here to help!</p>
+                <p>Thank you for your patience and for choosing us!</p>
+                <br>
+                <p>Best regards,</p>
+                <p>The Team</p>
+            </body>
+            </html>";
             $this->send_email($user['email'], $subject, $message);
 
-            $this->session->set_flashdata('message', 'User approved and notified.');
+            echo json_encode(['status' => 'success']);
+        } else {
+            echo json_encode(['status' => 'error']);
         }
-
-        redirect(base_url('auth/manage_users'));
     }
 
-    public function reject_user($user_id)
+
+    public function reject_user()
     {
+        $user_id = $this->input->post('user_id');
         $user = $this->auth_model->getUserById($user_id);
 
         if ($user) {
             $this->auth_model->updateUserStatus($user_id, 'rejected');
 
             // Send rejection email
-            $subject = "Account Rejected";
-            $message = "Hello " . $user['username'] . ",<br><br>We regret to inform you that your account registration has been rejected.<br><br>Thank you!";
-
+            $subject = "Account Registration Status - Action Required";
+            $message = "
+            <html>
+            <body>
+                <p>Dear " . $user['username'] . ",</p>
+                <p>We regret to inform you that your account registration has not been approved at this time. While we appreciate your interest in our platform, we were unable to process your account at this stage.</p>
+                <p>If you have any questions or wish to discuss this further, please do not hesitate to contact our support team. We value your time and will be happy to assist you in any way we can.</p>
+                <p>Thank you for understanding, and we hope to have the opportunity to assist you again in the future.</p>
+                <br>
+                <p>Best regards,</p>
+                <p>The Team</p>
+            </body>
+            </html>";
             $this->send_email($user['email'], $subject, $message);
 
-            // Flash message for rejection
-            $this->session->set_flashdata('message', 'Your account was rejected by the admin.');
-
+            echo json_encode(['status' => 'success']);
+        } else {
+            echo json_encode(['status' => 'error']);
         }
-
-        redirect(base_url('auth/manage_users'));
     }
+
+
+    public function move_to_pending()
+    {
+        $user_id = $this->input->post('user_id');
+        $user = $this->auth_model->getUserById($user_id);
+
+        if ($user) {
+            $this->auth_model->updateUserStatus($user_id, 'pending');
+            echo json_encode(['status' => 'success']);
+        } else {
+            echo json_encode(['status' => 'error']);
+        }
+    }
+
 
 
     private function send_email($to, $subject, $message)
@@ -121,10 +157,7 @@ class Auth extends CI_Controller
         $this->load->view('forlogin/frontpage_contact');
     }
 
-    public function registeradmin()
-    {
-        $this->load->view('forlogin/viewregisteradmin');
-    }
+
     public function feedback_contact()
     {
         $data['feedbacks'] = $this->auth_model->getFeedbackMessages(); // Get feedback from the model
@@ -196,41 +229,57 @@ class Auth extends CI_Controller
         $this->form_validation->set_rules('phoneNo', 'Phone Number', 'required');
         $this->form_validation->set_rules('gender', 'Gender', 'required');
         $this->form_validation->set_rules('birth_date', 'Birth Date', 'required');
+        $this->form_validation->set_rules('role', 'Role', 'required');
 
-        // Check if validation runs
         if ($this->form_validation->run() == FALSE) {
-            $errors = validation_errors();
-            echo json_encode(['status' => 'error', 'message' => $errors]);
+            echo json_encode(['status' => 'error', 'message' => validation_errors()]);
             return;
         }
 
-        // Check if email already exists
+        $role = $this->input->post('role'); // Get role from form
         $email = $this->input->post('email');
-        $existing_user = $this->auth_model->getUserByEmail($email);
-        if ($existing_user) {
-            echo json_encode(['status' => 'error', 'message' => 'Email is already in use.']);
-            return;
-        }
-
-        // Prepare the data for registration
-        $data = array(
-            'id' => null,
+        $password = password_hash($this->input->post('password'), PASSWORD_BCRYPT);
+        $data = [
             'username' => $this->input->post('username'),
             'email' => $email,
-            'password' => password_hash($this->input->post('password'), PASSWORD_BCRYPT),
+            'password' => $password,
             'address' => $this->input->post('address'),
             'phoneNo' => $this->input->post('phoneNo'),
             'gender' => $this->input->post('gender'),
             'birth_date' => $this->input->post('birth_date'),
-            'status' => 'pending'  // Set user status to pending
-        );
+        ];
 
-        if ($this->auth_model->register($data)) {
-            echo json_encode(['status' => 'success', 'message' => 'Registration successful! Please wait for admin approval.']);
+        if ($role == 'admin') {
+            // Check if admin email already exists
+            if ($this->auth_model->getAdminByEmail($email)) {
+                echo json_encode(['status' => 'error', 'message' => 'Admin email is already in use.']);
+                return;
+            }
+
+            if ($this->auth_model->register_admin($data)) {
+                echo json_encode(['status' => 'success', 'message' => 'Admin registration successful!']);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Admin registration failed.']);
+            }
         } else {
-            echo json_encode(['status' => 'error', 'message' => 'Registration failed. Please try again.']);
+            // Check if user email already exists
+            if ($this->auth_model->getUserByEmail($email)) {
+                echo json_encode(['status' => 'error', 'message' => 'User email is already in use.']);
+                return;
+            }
+
+            $data['status'] = 'pending'; // Default status for users
+            if ($this->auth_model->register($data)) {
+                echo json_encode(['status' => 'success', 'message' => 'User registration successful! Waiting for admin approval.']);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'User registration failed.']);
+            }
         }
     }
+
+
+
+
 
 
 

@@ -21,6 +21,17 @@ class Auth_model extends CI_Model
             return false;
         }
     }
+    public function getAdminByEmail($email)
+    {
+        $query = $this->db->get_where('admin', ['email' => $email]);
+        return $query->row_array();
+    }
+
+    public function register_admin($data)
+    {
+        return $this->db->insert('admin', $data);
+    }
+
 
     public function getUsersByStatus($status)
     {

@@ -693,6 +693,7 @@ class conAdmin extends CI_Controller
     }
 
 
+
     public function markNotificationsRead()
     {
         $user_id = $this->session->userdata('user_id');
@@ -922,6 +923,30 @@ class conAdmin extends CI_Controller
         $this->db->where('id', $id)->update('file_types', ['status' => $status]);
 
         echo json_encode(['status' => 'success', 'message' => 'File type status updated successfully.']);
+    }
+
+
+    public function sendFileNotification()
+    {
+        $user_id = $this->input->post('user_id');
+        $file_type = $this->input->post('file_type');
+
+        if (!$user_id || !$file_type) {
+            echo json_encode(['status' => 'error', 'message' => 'Invalid request.']);
+            return;
+        }
+
+        // I-save ang notification sa database
+        $data = [
+            'user_id' => $user_id,
+            'message' => "You need to upload your {$file_type} file.",
+            'status' => 'unread',
+            'created_at' => date('Y-m-d H:i:s')
+        ];
+
+        $this->db->insert('notifications_requirements', $data);
+
+        echo json_encode(['status' => 'success', 'message' => 'User has been notified.']);
     }
 
 
@@ -1171,6 +1196,38 @@ class conAdmin extends CI_Controller
         $data['users'] = $users;
         $data['notifications'] = $notifications; // Pass notifications
         $this->load->view('adminHomepage/UserUploadedFiles', $data);
+    }
+    public function sendMessage()
+    {
+        // Ensure the admin is logged in
+        if (!$this->session->userdata('admin_id')) {
+            show_error("Unauthorized access", 403, "Access Denied");
+            return;
+        }
+
+        // Retrieve data from the form submission
+        $user_id = $this->input->post('user_id');
+        $message = $this->input->post('message');
+
+        // Check if the message is not empty
+        if (empty($message)) {
+            $this->session->set_flashdata('error', 'Message cannot be empty.');
+            redirect('conAdmin'); // Redirect back to the User Uploaded Files page
+        }
+
+        // Insert the message into the notifications table
+        $notification_data = [
+            'user_id' => $user_id,
+            'message' => $message,
+            'created_at' => date('Y-m-d H:i:s'),
+            'status' => 'unread' // Set the initial status to unread
+        ];
+
+        $this->db->insert('notification_message_the_user', $notification_data);
+
+        // Set a success message and redirect back to the files page
+        $this->session->set_flashdata('success', 'Message sent successfully!');
+        redirect('conAdmin');
     }
 
     public function bulkUpdateFileStatus()

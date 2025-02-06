@@ -71,7 +71,8 @@
                 <li class="search-box">
                     <!-- Search Icon: changed to a magnifying glass -->
                     <i class='bx bx-search-alt icon'></i>
-                    <input type="search" id="search-bar" placeholder="Search" oninput="filterTasks()">
+                    <input class="py-2 px-3 text-left text-small font-semibold  uppercase tracking-wider" type="search"
+                        id="search-bar" placeholder="Search" oninput="filterTasks()">
                 </li>
                 <li class="nav-link">
                     <a href="javascript:void(0);" onclick="loadView('dashboard')">
@@ -87,13 +88,7 @@
                         <span class="text nav-text">MANAGE USER ACCOUNT</span>
                     </a>
                 </li>
-                <li class="nav-link">
-                    <a href="javascript:void(0);" onclick="loadView('adminUserRequirements')">
-                        <!--  Icon: changed to a house -->
-                        <i class='bx bx-home-circle icon'></i>
-                        <span class="text nav-text">ASSIGN REQUIREMENTS</span>
-                    </a>
-                </li>
+
 
                 <!-- <li class="nav-link">
                     <a href="javascript:void(0);" onclick="loadView('assignShift')">
@@ -131,17 +126,23 @@
                 </li>
 
 
-                <li class="nav-link">
+                <!-- <li class="nav-link">
                     <a href="javascript:void(0);" onclick="loadView('createTask')">
-                        <!-- Task Icon: changed to checklist -->
                         <i class='bx bx-check-square icon'></i>
                         <span class="text nav-text">USER TASK</span>
                     </a>
-                </li>
+                </li> -->
                 <li class="nav-link">
                     <a href="javascript:void(0);" onclick="loadView('userUploadedTasks')">
                         <i class='bx bx-cloud-upload icon'></i>
                         <span class="text nav-text">TASK/FACULTY</span>
+                    </a>
+                </li>
+                <li class="nav-link">
+                    <a href="javascript:void(0);" onclick="loadView('adminUserRequirements')">
+                        <!--  Icon: changed to a house -->
+                        <i class='bx bx-home-circle icon'></i>
+                        <span class="text nav-text">ASSIGN REQUIREMENTS</span>
                     </a>
                 </li>
                 <li class="nav-link">

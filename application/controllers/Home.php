@@ -38,6 +38,17 @@ class Home extends CI_Controller
         // Fetch notifications for rank up
         $notifications_rankup = $this->model_faculty->getNotificationsByUser($user_id);
 
+
+        // Fetch notifications from both 'notifications_requirements' and 'notification_message_the_user'
+        $notifications_requirements = $this->db->order_by('id', 'DESC')->get_where('notifications_requirements', ['user_id' => $user_id])->result_array();
+        $notifications_messages = $this->db->order_by('created_at', 'DESC')->get_where('notification_message_the_user', ['user_id' => $user_id])->result_array();
+
+        // Merge both notification types
+        $notifications = array_merge($notifications_requirements, $notifications_messages);
+
+        // Pass to the view
+        $data['notifications'] = $notifications;
+
         // Fetch notifications for requirements
         $notifications_requirements = $this->db->order_by('id', 'DESC')->get_where('notifications_requirements', ['user_id' => $user_id])->result_array();
 
@@ -64,32 +75,70 @@ class Home extends CI_Controller
 
     public function userDashboard()
     {
-        // Retrieve user ID from session
         $user_id = $this->session->userdata('user_id');
 
-        // Ensure user ID is available
         if (!$user_id) {
             show_error("User not logged in or session expired.", 403, "Access Denied");
             return;
         }
-        // Fetch uploaded files for the logged-in user
+
+        // Fetch uploaded files
         $uploaded_files = $this->db->get_where('userrequirements', ['user_id' => $user_id])->result_array();
-        // Count the total number of uploaded, approved, and pending files
         $totalUploaded = count($uploaded_files);
         $pendingFiles = $this->db->where(['user_id' => $user_id, 'status' => 'pending'])->count_all_results('userrequirements');
         $approvedFiles = $this->db->where(['user_id' => $user_id, 'status' => 'approved'])->count_all_results('userrequirements');
+        $deniedFiles = $this->db->where(['user_id' => $user_id, 'status' => 'denied'])->count_all_results('userrequirements');
 
-        // Calculate progress (based on the approved files count)
+        // Progress calculation
         $progress = ($totalUploaded > 0) ? ($approvedFiles / $totalUploaded) * 100 : 0;
-        // Pass the data to the view
-        $data['uploaded_files'] = $uploaded_files;
-        $data['totalUploaded'] = $totalUploaded;
-        $data['pendingFiles'] = $pendingFiles;
-        $data['approvedFiles'] = $approvedFiles;
-        $data['progress'] = $progress;
+
+        // Fetch file uploads over time
+        $uploadsOverTime = $this->db->query("
+            SELECT DATE(created_at) as upload_date, COUNT(id) as count
+            FROM userrequirements
+            WHERE user_id = ?
+            GROUP BY DATE(created_at)
+            ORDER BY DATE(created_at) ASC
+        ", [$user_id])->result_array();
+
+        $dates = [];
+        $uploads = [];
+        foreach ($uploadsOverTime as $entry) {
+            $dates[] = $entry['upload_date'];
+            $uploads[] = $entry['count'];
+        }
+
+        // Fetch file category distribution
+        $fileCategories = $this->db->query("
+            SELECT file_type, COUNT(id) as count
+            FROM userrequirements
+            WHERE user_id = ?
+            GROUP BY file_type
+        ", [$user_id])->result_array();
+
+        $categories = [];
+        $categoryCounts = [];
+        foreach ($fileCategories as $category) {
+            $categories[] = $category['file_type'];
+            $categoryCounts[] = $category['count'];
+        }
+
+        $data = [
+            'uploaded_files' => $uploaded_files,
+            'totalUploaded' => $totalUploaded,
+            'pendingFiles' => $pendingFiles,
+            'approvedFiles' => $approvedFiles,
+            'deniedFiles' => $deniedFiles,
+            'progress' => $progress,
+            'uploadDates' => json_encode($dates),
+            'uploadCounts' => json_encode($uploads),
+            'fileCategories' => json_encode($categories),
+            'categoryCounts' => json_encode($categoryCounts),
+        ];
 
         $this->load->view('Homepage/viewuserdashboard', $data);
     }
+
 
 
     public function logout()

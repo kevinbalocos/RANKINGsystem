@@ -11,17 +11,29 @@ body.dark {
     --border-color: #ffffff3a;
 }
 
+body.dark h5
+{
+    color: var(--primary-color) !important;
+}
+
 body.dark .bg-white
  {
     background-color: var(--sidebar-color) !important;
     color: var(--text-light-color) !important;
+}
+
+body.dark span
+{
+    background-color: none !important;
+    border-color: var(--primary-color-light) !important;
 }
 body.dark .table tr,
 body.dark .table td,
 body.dark .table th,
 body.dark .darkmode_h1, 
 body.dark label,
-body.dark li {
+body.dark li
+ {
     background-color: var(--sidebar-color) !important;
     color: var(--text-light-color) !important;
     border-color: var(--primary-color-light) !important;

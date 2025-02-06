@@ -18,19 +18,12 @@ class home_model extends CI_Model
         $query = $this->db->get_where('admin', ['email' => $email]);
         $admin = $query->row_array();
 
-        if ($admin) {
-
-            if (
-                ($email == 'richmond@admin' && $password == '1234') ||
-                ($email == 'trina@admin' && $password == '1234') ||
-                ($email == 'kevin@admin' && $password == '1234')
-            ) {
-                return $admin;
-            }
+        if ($admin && password_verify($password, $admin['password'])) {
+            return $admin;
         }
-        log_message('error', 'Invalid email or password');
         return false;
     }
+
 
 
     public function setlogin($email, $password)
