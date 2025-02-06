@@ -59,10 +59,6 @@
 
 <body class="bg-gray-50">
 
-    <!-- Header -->
-    <header class="bg-white shadow px-6 py-3">
-        <h1 class="text-2xl font-bold text-gray-800">Requirements Status</h1>
-    </header>
 
     <!-- Main Content -->
     <div class="main-container">
@@ -99,7 +95,7 @@
                 </table>
             </div>
 
-            <h2 class="text-2xl font-bold mt-8">Uploaded Tasks</h2>
+            <!-- <h2 class="text-2xl font-bold mt-8">Uploaded Tasks</h2>
             <div class="table overflow-x-auto bg-white p-6 rounded-md shadow-sm mt-4">
                 <table class="table-auto w-full text-left text-gray-700">
                     <thead>
@@ -140,8 +136,13 @@
 
 
                 </table>
-            </div>
-
+            </div> -->
+            <?php
+            // Sort users by progress in descending order
+            usort($users, function ($a, $b) {
+                return $b['progress'] - $a['progress']; // Sort in descending order
+            });
+            ?>
             <!-- Users Progress -->
             <div class="bg-white shadow rounded-lg p-6">
                 <h2 class="text-2xl font-semibold text-gray-700 mb-4">All Users</h2>
@@ -172,10 +173,11 @@
         </div>
 
         <div class="right-section">
-            <h2 class="text-xl font-bold text-gray-800">Notifications</h2>
-            <button class="text-red-500 hover:underline text-sm mb-4"
-                onclick="deleteAllRequirement_statusNotifications()">Delete
-                All Notifications</button>
+            <h2 class="text-md uppercase text-gray-800 flex justify-between my-3">Notifications <button
+                    class="text-red-500 hover:line-through text-sm  uppercase"
+                    onclick="deleteAllRequirement_statusNotifications()">Delete
+                    All Notifications</button></h2>
+
             <?php if (!empty($notifications)): ?>
                 <ul class="space-y-4">
                     <?php foreach ($notifications as $notification): ?>

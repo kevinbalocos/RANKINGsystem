@@ -167,17 +167,33 @@
                             class="bg-blue-600 text-white px-4 py-2 rounded-md shadow-sm hover:bg-blue-700 w-full">Check-Out</button>
                     </form>
                 <?php elseif ($attendance && $attendance[0]['check_out_time']): ?>
-                    <form action="<?= site_url('controllerAttendance/checkIn') ?>" method="POST">
-                        <button type="submit"
+                    <form id="checkInForm" action="<?= site_url('controllerAttendance/checkIn') ?>" method="POST">
+                        <button type="button" onclick="checkShift()"
                             class="bg-green-600 text-white px-4 py-2 rounded-md shadow-sm hover:bg-green-700 w-full">Check-In</button>
                     </form>
                 <?php else: ?>
-                    <form action="<?= site_url('controllerAttendance/checkIn') ?>" method="POST">
-                        <button type="submit"
+                    <form id="checkInForm" action="<?= site_url('controllerAttendance/checkIn') ?>" method="POST">
+                        <button type="button" onclick="checkShift()"
                             class="bg-yellow-600 text-white px-4 py-2 rounded-md shadow-sm hover:bg-yellow-700 w-full">Check-In</button>
                     </form>
                 <?php endif; ?>
             </div>
+
+            <script>
+                function checkShift() {
+                    <?php if (!$shift): ?>
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'No Assigned Shift',
+                            text: 'You cannot check in because no shift has been assigned yet.',
+                            confirmButtonColor: '#f59e0b'
+                        });
+                    <?php else: ?>
+                        document.getElementById("checkInForm").submit();
+                    <?php endif; ?>
+                }
+            </script>
+
         </div>
     </div>
 

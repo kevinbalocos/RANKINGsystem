@@ -17,11 +17,103 @@ class Auth extends CI_Controller
         date_default_timezone_set('Asia/Manila');
 
 
+        $this->email_config = [
+            'protocol' => 'smtp',
+            'smtp_host' => 'ssl://smtp.gmail.com',
+            'smtp_port' => 465,
+            'smtp_user' => 'erankingsystem@gmail.com', // Your email
+            'smtp_pass' => 'xcgs aayk sabg smwd', // Your password (or App Password)
+            'mailtype' => 'html',
+            'charset' => 'utf-8',
+            'newline' => "\r\n"
+        ];
+
+
+
     }
+
+
+
+
+    public function manage_users()
+    {
+        $data['pending_users'] = $this->auth_model->getPendingUsers();
+        $data['approved_users'] = $this->auth_model->getUsersByStatus('approved');
+        $data['rejected_users'] = $this->auth_model->getUsersByStatus('rejected');
+        $this->load->view('adminHomepage/approve_users_account', $data);
+    }
+
+    public function approve_user($user_id)
+    {
+        $user = $this->auth_model->getUserById($user_id);
+
+        if ($user) {
+            $this->auth_model->updateUserStatus($user_id, 'approved');
+
+            // Send approval email
+            $subject = "Account Approved";
+            $message = "Hello " . $user['username'] . ",<br><br>Your account has been approved. You can now log in.<br><br>Thank you!";
+
+            $this->send_email($user['email'], $subject, $message);
+
+            $this->session->set_flashdata('message', 'User approved and notified.');
+        }
+
+        redirect(base_url('auth/manage_users'));
+    }
+
+    public function reject_user($user_id)
+    {
+        $user = $this->auth_model->getUserById($user_id);
+
+        if ($user) {
+            $this->auth_model->updateUserStatus($user_id, 'rejected');
+
+            // Send rejection email
+            $subject = "Account Rejected";
+            $message = "Hello " . $user['username'] . ",<br><br>We regret to inform you that your account registration has been rejected.<br><br>Thank you!";
+
+            $this->send_email($user['email'], $subject, $message);
+
+            // Flash message for rejection
+            $this->session->set_flashdata('message', 'Your account was rejected by the admin.');
+
+        }
+
+        redirect(base_url('auth/manage_users'));
+    }
+
+
+    private function send_email($to, $subject, $message)
+    {
+        $this->load->library('email');
+        $this->email->initialize($this->email_config); // ✅ Use saved email config
+
+        $this->email->from('erankingsystem@gmail.com', 'HR ADMIN'); // Change sender email
+        $this->email->to($to);
+        $this->email->subject($subject);
+        $this->email->message($message);
+
+
+        if ($this->email->send()) {
+            return true;
+        } else {
+            log_message('error', $this->email->print_debugger());
+            return false;
+        }
+    }
+
+
+
+
+
 
     public function index()
     {
-        $this->load->view('forlogin/frontpage');
+        $data['pending_users'] = $this->auth_model->getPendingUsers();
+        $data['approved_users'] = $this->auth_model->getUsersByStatus('approved');
+        $data['rejected_users'] = $this->auth_model->getUsersByStatus('rejected');
+        $this->load->view('forlogin/frontpage', $data);
     }
 
     public function contact()
@@ -32,6 +124,11 @@ class Auth extends CI_Controller
     public function registeradmin()
     {
         $this->load->view('forlogin/viewregisteradmin');
+    }
+    public function feedback_contact()
+    {
+        $data['feedbacks'] = $this->auth_model->getFeedbackMessages(); // Get feedback from the model
+        $this->load->view('adminHomepage/Feedback', $data); // Pass data to the view
     }
 
 
@@ -48,34 +145,43 @@ class Auth extends CI_Controller
     {
         $this->load->view('forlogin/REGISTERorLOGIN');
     }
+
     public function viewlogin()
     {
-        // Load frontpage (This includes the navbar and hero section)
         $this->load->view('forlogin/frontpage');
 
-        // The error will be passed to viewlogin
-        $data['error'] = ''; // Default to no error
+        $data['error'] = '';  // Initialize error variable
 
-        if (isset($_POST['email']) && isset($_POST['password'])) {
+        if ($this->input->post('email') && $this->input->post('password')) {
             $email = $this->input->post('email');
             $password = $this->input->post('password');
 
+            // Get user data from the model
             $user = $this->auth_model->setlogin($email, $password);
 
             if ($user) {
-                // Successful login, set session and redirect
-                $this->session->set_userdata('user_id', $user['id']);
-                $this->session->set_userdata('username', $user['username']);
-                redirect(base_url('Home'));
+                if ($user['status'] === 'approved') {
+                    $this->session->set_userdata('user_id', $user['id']);
+                    $this->session->set_userdata('username', $user['username']);
+                    redirect(base_url('Home'));
+                } else {
+                    // Handle cases where the user is pending or rejected
+                    if ($user['status'] === 'rejected') {
+                        $data['error'] = 'Your account has been rejected by the admin.';
+                    } else {
+                        $data['error'] = 'Your account is pending approval.';
+                    }
+                }
             } else {
-                // Login failed, pass error message
+                // In case of invalid login (wrong email or password)
                 $data['error'] = 'Invalid email or password';
             }
         }
 
-        // Load the login page with error (if any)
+        // Load the login view with the error message if any
         $this->load->view('forlogin/viewlogin', $data);
     }
+
 
 
 
@@ -91,38 +197,38 @@ class Auth extends CI_Controller
         $this->form_validation->set_rules('gender', 'Gender', 'required');
         $this->form_validation->set_rules('birth_date', 'Birth Date', 'required');
 
+        // Check if validation runs
+        if ($this->form_validation->run() == FALSE) {
+            $errors = validation_errors();
+            echo json_encode(['status' => 'error', 'message' => $errors]);
+            return;
+        }
+
+        // Check if email already exists
+        $email = $this->input->post('email');
+        $existing_user = $this->auth_model->getUserByEmail($email);
+        if ($existing_user) {
+            echo json_encode(['status' => 'error', 'message' => 'Email is already in use.']);
+            return;
+        }
+
+        // Prepare the data for registration
         $data = array(
             'id' => null,
             'username' => $this->input->post('username'),
-            'email' => $this->input->post('email'),
+            'email' => $email,
             'password' => password_hash($this->input->post('password'), PASSWORD_BCRYPT),
             'address' => $this->input->post('address'),
             'phoneNo' => $this->input->post('phoneNo'),
             'gender' => $this->input->post('gender'),
             'birth_date' => $this->input->post('birth_date'),
+            'status' => 'pending'  // Set user status to pending
         );
 
-        $password = $this->input->post('password');
-        $confirmPassword = $this->input->post('confirm_password');
-
-        if ($password !== $confirmPassword) {
-            $this->load->view('forlogin/frontpage');  // Include frontpage layout
-            $this->load->view('forlogin/viewregister', ['error' => 'Passwords do not match']);
+        if ($this->auth_model->register($data)) {
+            echo json_encode(['status' => 'success', 'message' => 'Registration successful! Please wait for admin approval.']);
         } else {
-            $existingUser = $this->auth_model->getUserByEmail($data['email']);
-
-            if ($existingUser) {
-                $this->load->view('forlogin/viewregister', ['error' => 'Email is already in use']);
-            } else {
-                if ($this->auth_model->register($data)) {
-                    // Successfully registered, pass a success message
-                    $this->session->set_flashdata('success', 'Successfully registered!');
-                    redirect(base_url('auth'));  // Redirect to login page
-                } else {
-                    $this->load->view('forlogin/frontpage');
-                    $this->load->view('forlogin/viewregister', ['error' => 'Registration failed']);
-                }
-            }
+            echo json_encode(['status' => 'error', 'message' => 'Registration failed. Please try again.']);
         }
     }
 
@@ -202,6 +308,20 @@ class Auth extends CI_Controller
             }
         }
     }
+
+    public function deleteFeedback($id)
+    {
+        if ($this->auth_model->deleteFeedbackById($id)) {
+            echo json_encode(['status' => 'success', 'message' => 'Feedback deleted successfully']);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Failed to delete feedback']);
+        }
+    }
+
+
+
+
+
 
 
 

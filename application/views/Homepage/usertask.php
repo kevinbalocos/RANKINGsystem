@@ -305,9 +305,47 @@
             </tbody>
 
         </table>
-
     </div>
 
+    <div class="table overflow-x-auto bg-white p-6 rounded-md shadow-sm mt-4">
+        <h2 class="text-lg uppercase text-center  mt-8">Uploaded Tasks</h2>
+
+        <table class="table-auto w-full text-left text-gray-700">
+            <thead>
+                <tr class="bg-gray-100">
+                    <th class="px-4 py-3 text-sm font-semibold text-gray-600">File Name</th>
+                    <th class="px-4 py-3 text-sm font-semibold text-gray-600">Status</th>
+                    <th class="px-4 py-3 text-sm font-semibold text-gray-600">Uploaded At</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (isset($uploaded_tasks) && is_array($uploaded_tasks)): ?>
+                    <?php foreach ($uploaded_tasks as $file): ?>
+                        <tr class="border-b hover:bg-gray-50 transition-all">
+                            <td class="px-4 py-4 text-sm">
+                                <a href="<?php echo base_url('uploads/tasks/' . $file['file_name']); ?>" target="_blank"
+                                    class="text-blue-500 hover:underline">
+                                    <?php echo $file['file_name']; ?>
+                                </a>
+                            </td>
+                            <td class="px-4 py-4 text-sm">
+                                <span
+                                    class="px-2 py-1 text-sm font-medium <?php echo $file['status'] == 'Completed' ? 'bg-green-200 text-green-800' : ($file['status'] == 'In Progress' ? 'bg-yellow-200 text-yellow-800' : 'bg-red-200 text-red-800'); ?>">
+                                    <?php echo $file['status']; ?>
+                                </span>
+                            </td>
+                            <td class="px-4 py-4 text-sm">
+                                <?php echo date("F j, Y, g:i A", strtotime($file['uploaded_at'])); ?>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="4" class="border px-4 py-4 text-center text-gray-500">No uploaded tasks found.
+                        </td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
 
 
 

@@ -37,18 +37,29 @@
     </div>
   </div>
 
-  <!-- SweetAlert2 Notification -->
   <script>
+    <?php if ($this->session->flashdata('message')) { ?>
+      Swal.fire({
+        icon: 'error', // Use 'error' for rejection
+        title: 'Rejected', // Title for rejection
+        text: "<?= $this->session->flashdata('message'); ?>", // Display rejection message here
+        timer: 3000,
+        showConfirmButton: false
+      });
+    <?php } ?>
+
     <?php if (isset($error) && $error != '') { ?>
       Swal.fire({
-        icon: 'error',
-        title: 'Oops...',
+        icon: 'warning',
+        title: 'Warning',
         text: "<?= $error; ?>",
         timer: 3000,
         showConfirmButton: false
       });
     <?php } ?>
   </script>
+
+
 
 </body>
 

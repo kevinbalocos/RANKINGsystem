@@ -16,15 +16,30 @@ class Auth_model extends CI_Model
         $user = $query->row_array();
 
         if ($user && password_verify($password, $user['password'])) {
-            return $user;
+            return $user;  // Include status in the response
         } else {
-
-            $db_error = $this->db->error();
-            log_message('error', 'Database Error: ' . print_r($db_error, true));
-
             return false;
         }
     }
+
+    public function getUsersByStatus($status)
+    {
+        $query = $this->db->get_where('users', ['status' => $status]);
+        return $query->result_array();
+    }
+
+    public function getPendingUsers()
+    {
+        $query = $this->db->get_where('users', ['status' => 'pending']);
+        return $query->result_array();
+    }
+
+    public function updateUserStatus($user_id, $status)
+    {
+        $this->db->where('id', $user_id);
+        return $this->db->update('users', ['status' => $status]);
+    }
+
 
     public function register($data)
     {
@@ -122,6 +137,29 @@ class Auth_model extends CI_Model
     public function saveContactMessage($data)
     {
         return $this->db->insert('contact_frontpage', $data);
+    }
+
+    public function getFeedbackMessages()
+    {
+        $this->db->order_by('created_at', 'DESC');
+        $query = $this->db->get('contact_frontpage');
+        return $query->result_array();
+    }
+
+
+    public function deleteFeedbackById($id)
+    {
+        // First check if the feedback exists
+        $this->db->where('id', $id);
+        $query = $this->db->get('contact_frontpage');
+
+        if ($query->num_rows() == 0) {
+            return false; // Feedback ID not found
+        }
+
+        // Delete the feedback
+        $this->db->where('id', $id);
+        return $this->db->delete('contact_frontpage');
     }
 
 
@@ -318,6 +356,7 @@ class Auth_model extends CI_Model
         }
         return false;
     }
+
 
 
 

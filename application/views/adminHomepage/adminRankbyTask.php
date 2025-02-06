@@ -193,7 +193,7 @@
                             </th>
                             <th
                                 class="px-4 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                10,000 Max Points
+                                Points
                             </th>
                         </tr>
                     </thead>
@@ -204,15 +204,13 @@
                             foreach ($rankings as $user):
                                 // Combine completed tasks and total points
                                 $total_score = $user['completed_tasks'] + $user['total_points'];
-                                // Set the maximum points to 100,000
-                                $progress_percentage = ($total_score / 10000) * 100;
+                                $progress_percentage = ($total_score / 50000) * 100;
                                 ?>
                                 <tr>
                                     <td class="px-4 py-2 text-sm text-gray-500"><?= $rank++; ?></td>
                                     <td class="px-4 py-2 text-sm text-gray-800"><?= htmlspecialchars($user['username']); ?></td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         <div class="flex items-center">
-                                            <!-- <span class="mr-2"><?= $total_score; ?></span> -->
                                             <div class="w-full bg-gray-200 rounded-full h-2.5">
                                                 <div class="bg-blue-600 h-2.5 rounded-full"
                                                     style="width: <?= min($progress_percentage, 100); ?>%">
@@ -229,8 +227,8 @@
                             </tr>
                         <?php endif; ?>
                     </tbody>
-
                 </table>
+
             </div>
         </div>
 
@@ -240,15 +238,16 @@
         <div class="right-section">
             <!-- Delete All Notifications Button -->
             <div class="mb-4">
-                <form method="POST" action="<?= base_url('conAdmin/deleteAllNotifications'); ?>">
-                    <button type="submit"
-                        class="inline-flex items-center py-2 px-4 bg-red-600 text-white font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow">
+
+            </div>
+
+            <h2 class="text-md text-gray-800 mb-4 flex uppercase justify-between">Notifications <form method="POST"
+                    action="<?= base_url('conAdmin/deleteAllNotifications'); ?>">
+                    <button type="submit" class="text-red-500 px-2 text-md uppercase hover:line-through">
                         Delete All Notifications
                     </button>
                 </form>
-            </div>
-
-            <h2 class="text-xl font-bold text-gray-800 mb-4">Notifications</h2>
+            </h2>
             <ul class="list-disc list-inside text-gray-700 space-y-2">
 
                 <?php if (!empty($notifications)): ?>

@@ -88,13 +88,13 @@
                     <label for="name" class="block text-sm font-medium text-gray-600">Full Name</label>
                     <input type="text" id="name" name="name"
                         class="w-full bg-gray-100 rounded border border-gray-300 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 text-gray-700 py-2 px-4 outline-none transition duration-200 ease-in-out"
-                        placeholder="John Doe" required>
+                        placeholder="Jade Kevin Balocos" required>
                 </div>
                 <div class="mb-4">
                     <label for="email" class="block text-sm font-medium text-gray-600">Email Address</label>
                     <input type="email" id="email" name="email"
                         class="w-full bg-gray-100 rounded border border-gray-300 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 text-gray-700 py-2 px-4 outline-none transition duration-200 ease-in-out"
-                        placeholder="john.doe@example.com" required>
+                        placeholder="jadekevin@example.com" required>
                 </div>
                 <div class="mb-4">
                     <label for="message" class="block text-sm font-medium text-gray-600">Your Message</label>

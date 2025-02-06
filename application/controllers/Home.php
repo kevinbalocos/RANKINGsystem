@@ -11,14 +11,12 @@ class Home extends CI_Controller
         $this->load->library('session');
         $this->load->model('admin_model');
         $this->load->database();
-        $this->load->library('session');
         $this->load->library('upload');
         $this->load->model('model_faculty');
         date_default_timezone_set('Asia/Manila');
 
 
     }
-
     public function index()
     {
         $username = '';
@@ -29,13 +27,69 @@ class Home extends CI_Controller
             $username = $this->session->userdata('username');
         }
 
-        // Load the view and pass the $username variable
+        $user_id = $this->session->userdata('user_id');
+
+        // Ensure user ID is available
+        if (!$user_id) {
+            show_error("User not logged in or session expired.", 403, "Access Denied");
+            return;
+        }
+
+        // Fetch notifications for rank up
+        $notifications_rankup = $this->model_faculty->getNotificationsByUser($user_id);
+
+        // Fetch notifications for requirements
+        $notifications_requirements = $this->db->order_by('id', 'DESC')->get_where('notifications_requirements', ['user_id' => $user_id])->result_array();
+
+        // Fetch unread notifications count for requirements
+        $unread_notifications_requirements = $this->db->where(['user_id' => $user_id, 'status' => 'unread'])->count_all_results('notifications_requirements');
+
+        // Pass the notifications data to the view
+        $data['notifications_rankup'] = $notifications_rankup;
+        $data['notifications_requirements'] = $notifications_requirements;
+        $data['unread_notifications_requirements'] = $unread_notifications_requirements;
+
+        // Fetch unread notifications count for rankup
+        $unread_notifications_rankup = $this->db->where(['user_id' => $user_id, 'status' => 'unread'])->count_all_results('notifications_faculty_rankup');
+
+        // Include the unread notifications for both
+        $data['unread_notifications'] = $unread_notifications_rankup + $unread_notifications_requirements;
+
+        // Load the view and pass the data
         $data['username'] = $username;
         $data['user'] = $this->auth_model->getUserById($this->session->userdata('user_id'));
         $this->load->view('Homepage/viewhome', $data);
     }
 
 
+    public function userDashboard()
+    {
+        // Retrieve user ID from session
+        $user_id = $this->session->userdata('user_id');
+
+        // Ensure user ID is available
+        if (!$user_id) {
+            show_error("User not logged in or session expired.", 403, "Access Denied");
+            return;
+        }
+        // Fetch uploaded files for the logged-in user
+        $uploaded_files = $this->db->get_where('userrequirements', ['user_id' => $user_id])->result_array();
+        // Count the total number of uploaded, approved, and pending files
+        $totalUploaded = count($uploaded_files);
+        $pendingFiles = $this->db->where(['user_id' => $user_id, 'status' => 'pending'])->count_all_results('userrequirements');
+        $approvedFiles = $this->db->where(['user_id' => $user_id, 'status' => 'approved'])->count_all_results('userrequirements');
+
+        // Calculate progress (based on the approved files count)
+        $progress = ($totalUploaded > 0) ? ($approvedFiles / $totalUploaded) * 100 : 0;
+        // Pass the data to the view
+        $data['uploaded_files'] = $uploaded_files;
+        $data['totalUploaded'] = $totalUploaded;
+        $data['pendingFiles'] = $pendingFiles;
+        $data['approvedFiles'] = $approvedFiles;
+        $data['progress'] = $progress;
+
+        $this->load->view('Homepage/viewuserdashboard', $data);
+    }
 
 
     public function logout()
@@ -45,30 +99,8 @@ class Home extends CI_Controller
     }
 
 
-    public function stock()
-    {
-        $this->load->view('Homepage/stock');
-    }
-
-    public function purchaseThankyou()
-    {
-        $this->load->view('Thankyou/purchaseThankyou');
-    }
-    public function test()
-    {
-        $this->load->view('Thankyou/test');
-    }
 
 
-
-    //! ADMIN MODEL
-    public function DefaultHome()
-    {
-        // Fetch all products
-        $data['products'] = $this->admin_model->getProductsindefaulthome();
-
-        $this->load->view('Homepage/DefaultHome', $data);
-    }
 
     public function clientprofile()
     {
@@ -246,7 +278,7 @@ class Home extends CI_Controller
     }
 
 
-    
+
 
 
 

@@ -19,7 +19,9 @@ body.dark .bg-white
 body.dark .table tr,
 body.dark .table td,
 body.dark .table th,
-body.dark .darkmode_h1 {
+body.dark .darkmode_h1, 
+body.dark label,
+body.dark li {
     background-color: var(--sidebar-color) !important;
     color: var(--text-light-color) !important;
     border-color: var(--primary-color-light) !important;
@@ -90,7 +92,8 @@ body.dark a {
     color: var(--primary-color) !important;
 }
 
-body.dark p {
+body.dark p,
+body.dark h3 {
     color: var(--primary-color) !important;
 }
 

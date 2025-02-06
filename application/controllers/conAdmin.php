@@ -24,8 +24,14 @@ class conAdmin extends CI_Controller
     }
     public function userUploadedTasks()
     {
-        // Fetch uploaded tasks
-        $uploaded_tasks = $this->admin_model->getUploadedTasks(); // Assuming this function retrieves uploaded tasks from the database
+        $users = $this->auth_model->getUsers(); // Fetch all users
+        $data['users'] = $users;
+
+        // Fetch file submissions for all users (remove the logged-in user restriction)
+        $file_submissions = $this->model_faculty->getAllFileSubmissions(); // Update this function to fetch for all users
+
+        // Fetch uploaded tasks for all users
+        $uploaded_tasks = $this->admin_model->getUploadedTasks(); // This should already return tasks for all users
 
         // Map uploaded tasks to their corresponding statuses
         foreach ($uploaded_tasks as &$file) {
@@ -35,10 +41,108 @@ class conAdmin extends CI_Controller
 
         // Pass the data to the view
         $data['uploaded_tasks'] = $uploaded_tasks;
+        $data['file_submissions'] = $file_submissions; // Add all file submissions
+        $data['rank_label'] = ''; // Adjust rank_label if necessary
+        $data['next_rank_label'] = ''; // Adjust next rank if necessary
+        $data['next_rank_order'] = ''; // Adjust rank order if necessary
 
         // Load the view
         $this->load->view('adminHomepage/userUploadedTask', $data);
     }
+
+    public function getNextRankOrder($currentRank)
+    {
+        $rankOrder = [
+            'Instructor I',
+            'Instructor II',
+            'Instructor III',
+            'Assistant Professor I',
+            'Assistant Professor II',
+            'Associate Professor I',
+            'Associate Professor II',
+            'Associate Professor III',
+            'Associate Professor IV',
+            'Professor I',
+            'Professor II'
+        ];
+
+        $currentRankIndex = array_search($currentRank, $rankOrder);
+        if ($currentRankIndex !== false && $currentRankIndex + 1 < count($rankOrder)) {
+            return $rankOrder[$currentRankIndex + 1];
+        }
+
+        return 'No next rank available';
+    }
+
+    public function getNextRankLabel($currentRank)
+    {
+        $rankRequirements = [
+            'Instructor I' => 'BS/AB Graduate with Government Examination (CPA, Civil Service, Nursing Board Exam, etc)',
+            'Instructor II' => 'BS/AB with Government Examination and MA/MBA Units',
+            'Instructor III' => 'BS/AB with Government Examination with Complete Academic Requirements, no thesis',
+            'Assistant Professor I' => 'BS/AB with Full MA',
+            'Assistant Professor II' => 'Full MA with Government',
+            'Associate Professor I' => 'Full MA with 3-15 Doctoral Units',
+            'Associate Professor II' => 'Full MA with 18-30 Doctoral Units',
+            'Associate Professor III' => 'Full MA with 33-45 Doctoral Units',
+            'Associate Professor IV' => 'Full MA with over 45 Doctoral Units',
+            'Professor I' => 'Full-fledged Doctor for 10 years',
+            'Professor II' => 'Full-fledged Doctor for 11 years and above'
+        ];
+
+        $rankOrder = [
+            'Instructor I',
+            'Instructor II',
+            'Instructor III',
+            'Assistant Professor I',
+            'Assistant Professor II',
+            'Associate Professor I',
+            'Associate Professor II',
+            'Associate Professor III',
+            'Associate Professor IV',
+            'Professor I',
+            'Professor II'
+        ];
+
+        $currentRankIndex = array_search($currentRank, $rankOrder);
+        if ($currentRankIndex !== false && $currentRankIndex + 1 < count($rankOrder)) {
+            return $rankRequirements[$rankOrder[$currentRankIndex + 1]];
+        }
+
+        return 'No next rank available';
+    }
+
+
+    public function getRankLabel($rank)
+    {
+        switch ($rank) {
+            case 'Instructor I':
+                return 'BS/AB Graduate with Government Examination (CPA, Civil Service, Nursing Board Exam, etc)';
+            case 'Instructor II':
+                return 'BS/AB with Government Examination and MA/MBA Units';
+            case 'Instructor III':
+                return 'BS/AB with Government Examination with Complete Academic Requirements, no thesis';
+            case 'Assistant Professor I':
+                return 'BS/AB with Full MA';
+            case 'Assistant Professor II':
+                return 'Full MA with Government';
+            case 'Associate Professor I':
+                return 'Full MA with 3-15 Doctoral Units';
+            case 'Associate Professor II':
+                return 'Full MA with 18-30 Doctoral Units';
+            case 'Associate Professor III':
+                return 'Full MA with 33-45 Doctoral Units';
+            case 'Associate Professor IV':
+                return 'Full MA with over 45 Doctoral Units';
+            case 'Professor I':
+                return 'Full-fledged Doctor for 10 years';
+            case 'Professor II':
+                return 'Full-fledged Doctor for 11 years and above';
+            default:
+                return 'Unspecified Label';
+        }
+    }
+
 
 
     private function resizeImage($image_path)
@@ -493,7 +597,7 @@ class conAdmin extends CI_Controller
     }
 
     //conadmin
-    public function userDashboard()
+    public function userRequirements()
     {
         // Retrieve user ID from session
         $user_id = $this->session->userdata('user_id');
@@ -507,16 +611,74 @@ class conAdmin extends CI_Controller
         // Fetch uploaded files for the logged-in user
         $uploaded_files = $this->db->get_where('userrequirements', ['user_id' => $user_id])->result_array();
 
-        // Count the total number of uploaded, approved, and pending files
+        // Separate files by type (General, Mandatory, Yearly)
+        $generalFiles = array_filter($uploaded_files, function ($file) {
+            return strpos($file['file_path'], 'requirements') !== false && strpos($file['file_path'], 'mandatory_requirements') === false;
+        });
+
+        $mandatoryFiles = array_filter($uploaded_files, function ($file) {
+            return strpos($file['file_path'], 'mandatory_requirements') !== false;
+        });
+
+        $yearlyFiles = array_filter($uploaded_files, function ($file) {
+            return strpos($file['file_path'], 'yearly_requirements') !== false;
+        });
+
+        // Count the total number of uploaded, approved, and pending files per category
+        $totalGeneral = count($generalFiles);
+        $approvedGeneral = count(array_filter($generalFiles, function ($file) {
+            return $file['status'] == 'approved';
+        }));
+
+        $totalMandatory = count($mandatoryFiles);
+        $approvedMandatory = count(array_filter($mandatoryFiles, function ($file) {
+            return $file['status'] == 'approved';
+        }));
+
+        $totalYearly = count($yearlyFiles);
+        $approvedYearly = count(array_filter($yearlyFiles, function ($file) {
+            return $file['status'] == 'approved';
+        }));
+
+        // Calculate progress (based on the approved files count)
+        $generalProgress = ($totalGeneral > 0) ? ($approvedGeneral / $totalGeneral) * 100 : 0;
+        $mandatoryProgress = ($totalMandatory > 0) ? ($approvedMandatory / $totalMandatory) * 100 : 0;
+        $yearlyProgress = ($totalYearly > 0) ? ($approvedYearly / $totalYearly) * 100 : 0;
+
+        // Pass the data to the view
+        $data['generalProgress'] = $generalProgress;
+        $data['mandatoryProgress'] = $mandatoryProgress;
+        $data['yearlyProgress'] = $yearlyProgress;
+
+        $data['general_file_types'] = $this->db->get_where('file_types', ['category' => 'General', 'status' => 'approved'])->result_array();
+        $data['mandatory_file_types'] = $this->db->get_where('file_types', ['category' => 'Mandatory', 'status' => 'approved'])->result_array();
+        $data['yearly_file_types'] = $this->db->get_where('file_types', ['category' => 'Yearly', 'status' => 'approved'])->result_array();
+
+        // Fetch total uploaded files (this includes all categories)
         $totalUploaded = count($uploaded_files);
         $pendingFiles = $this->db->where(['user_id' => $user_id, 'status' => 'pending'])->count_all_results('userrequirements');
         $approvedFiles = $this->db->where(['user_id' => $user_id, 'status' => 'approved'])->count_all_results('userrequirements');
 
-        // Calculate progress (based on the approved files count)
+        // Calculate overall progress (based on the approved files count)
         $progress = ($totalUploaded > 0) ? ($approvedFiles / $totalUploaded) * 100 : 0;
 
         // Fetch notifications for the user (unread notifications only)
         $notifications = $this->db->get_where('notifications', ['user_id' => $user_id, 'status' => 'unread'])->result_array();
+
+        $uploaded_files = $this->db->get_where('userrequirements', ['user_id' => $user_id])->result_array();
+
+        // Add points to each file based on its file_type
+        foreach ($uploaded_files as &$file) {
+            $file_type = $file['file_type'];
+            // Get points from the file_types table
+            $file_type_data = $this->db->get_where('file_types', ['type_name' => $file_type])->row_array();
+            $file['points'] = $file_type_data ? $file_type_data['points'] : 0;  // Default points to 0 if not found
+        }
+
+
+
+
+
 
         // Pass the data to the view
         $data['uploaded_files'] = $uploaded_files;
@@ -527,77 +689,122 @@ class conAdmin extends CI_Controller
         $data['notifications'] = $notifications;
 
         // Load the view
-        $this->load->view('Homepage/viewuserdashboard', $data);
+        $this->load->view('Homepage/user_requirements', $data);
     }
 
 
-    // Generalized file upload function
-    public function uploadFile($fileType, $directory)
+    public function markNotificationsRead()
     {
-        $user_id = $this->session->userdata('user_id'); // Retrieve user ID from session
+        $user_id = $this->session->userdata('user_id');
 
         if (!$user_id) {
-            show_error("User not logged in.", 403, "Access Denied");
+            echo json_encode(['status' => 'error', 'message' => 'User not logged in']);
             return;
         }
 
-        // Check file name length
-        $fileName = $_FILES[$fileType]['name'];
-        if (strlen($fileName) > 30) {
-            echo json_encode(['status' => 'error', 'message' => 'File name exceeds the 30 character limit.']);
-            return; // Exit if file name is too long
+        // Update all unread notifications to 'read'
+        $this->db->where(['user_id' => $user_id, 'status' => 'unread']);
+        $this->db->where('user_id', $user_id)->update('notifications_requirements', ['status' => 'read']);
+        $this->db->where('user_id', $user_id)->update('notifications_faculty_rankup', ['status' => 'read']);
+
+        // Get the number of remaining unread notifications
+        $unread_notifications = $this->db->where(['user_id' => $user_id, 'status' => 'unread'])->count_all_results('notifications_requirements');
+
+        // Respond with success
+        echo json_encode([
+            'status' => 'success',
+            'unread_notifications' => $unread_notifications
+        ]);
+    }
+
+    public function getrequirementNotification()
+    {
+        $user_id = $this->session->userdata('user_id');
+
+        // Ensure user is logged in
+        if (!$user_id) {
+            show_error("User not logged in or session expired.", 403, "Access Denied");
+            return;
         }
 
-        // Configure upload settings
-        $config['upload_path'] = './uploads/' . $directory; // Dynamic upload path
-        $config['allowed_types'] = 'jpg|jpeg|png|pdf|doc|docx'; // Allowed file types
-        $config['max_size'] = 2048; // Maximum file size in KB (2MB)
-        $config['file_name'] = time() . '_' . $fileName; // Unique file name
+        // Fetch unread notifications
+        $notifications = $this->db->get_where('notifications_requirements', ['user_id' => $user_id, 'status' => 'unread'])->result_array();
 
-        // Load the upload library
-        $this->load->library('upload', $config);
+        // Send notifications as a JSON response
+        echo json_encode(['notifications' => $notifications]);
+    }
+    public function deleteAll_ViewHome_Notifications()
+    {
+        $user_id = $this->session->userdata('user_id');
 
-        if (!$this->upload->do_upload($fileType)) {
-            // If upload fails, return the error in JSON format
-            $error = $this->upload->display_errors();
-            echo json_encode(['status' => 'error', 'message' => $error]);
+        // Delete all notifications for the user
+        $this->db->where('user_id', $user_id);
+        $deleted_requirements = $this->db->delete('notifications_requirements');
+        $deleted_rankup = $this->db->where('user_id', $user_id)->delete('notifications_faculty_rankup');
+
+        if ($deleted_requirements && $deleted_rankup) {
+            echo json_encode([
+                'status' => 'success',
+                'message' => 'All notifications deleted.'
+            ]);
         } else {
-            // If upload succeeds, save file details in the database
-            $fileData = $this->upload->data();
-            $data = [
-                'user_id' => $user_id,
-                'file_name' => $fileData['file_name'],
-                'file_path' => 'uploads/' . $directory . '/' . $fileData['file_name'],
-                'file_type' => $directory, // File type corresponds to the directory (e.g., 'resume', 'sss', 'pagibig')
-                'status' => 'pending', // Default status
-                'uploaded_at' => date('Y-m-d H:i:s'),
-            ];
-            $this->db->insert('userrequirements', $data);
-            echo json_encode(['status' => 'success', 'message' => 'File uploaded successfully!']);
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Failed to delete notifications.'
+            ]);
         }
     }
 
 
-    // paths
-    public function uploadGeneralFile()
+    public function delete_viewhome_notifications()
     {
-        $this->uploadFile('requirements_file', 'requirements');
+        $user_id = $this->session->userdata('user_id');
 
+        // Get the raw POST data
+        $input = json_decode($this->input->raw_input_stream, true);
+        $notification_id = $input['notification_id'] ?? null;
+        $notification_type = $input['notification_type'] ?? 'requirements'; // Default to 'requirements'
+
+        if (!$user_id || !$notification_id) {
+            echo json_encode(['status' => 'error', 'message' => 'Invalid request']);
+            return;
+        }
+
+        // Determine the table based on the notification type
+        $table = ($notification_type == 'rankup') ? 'notifications_rankup' : 'notifications_requirements';
+
+        // Delete the notification from the appropriate table
+        $this->db->where('id', $notification_id)->where('user_id', $user_id);
+        $this->db->delete($table);
+
+        // Fetch the updated list of unread notifications for the selected type
+        $notifications = $this->db->get_where($table, ['user_id' => $user_id, 'status' => 'unread'])->result_array();
+
+        // Prepare the updated HTML for the notification dropdown
+        $updated_html = '';
+        foreach ($notifications as $notification) {
+            $updated_html .= '<li class="bg-gray-100 p-2 mb-2 rounded flex justify-between items-center">
+                                <div>
+                                    <p>' . htmlspecialchars($notification['message']) . '</p>
+                                    <p class="text-sm text-gray-500">' . date('F j, Y, g:i a', strtotime($notification['created_at'])) . '</p>
+                                </div>
+                                <button onclick="deleteNotification(' . $notification['id'] . ', \'' . $notification_type . '\')" class="text-red-500 hover:text-red-700">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </li>';
+        }
+
+        // Count remaining unread notifications
+        $unread_notifications = count($notifications);
+
+        // Send the updated HTML and notification count back to the frontend
+        echo json_encode([
+            'status' => 'success',
+            'updated_html' => $updated_html,
+            'unread_notifications' => $unread_notifications
+        ]);
     }
 
-
-    public function uploadSSSFile()
-    {
-        $this->uploadFile('sss_file', 'sss_files');
-
-
-    }
-
-    public function uploadPagibigFile()
-    {
-        $this->uploadFile('pagibig_file', 'pagibig_files');
-
-    }
 
 
 
@@ -612,16 +819,24 @@ class conAdmin extends CI_Controller
             $this->db->where('id', $file_id);
             $this->db->update('userrequirements', ['status' => $status, 'updated_at' => date('Y-m-d H:i:s')]);
 
-            // Get the user who uploaded the file and the file type
+            // Get the file details and user ID
             $file = $this->db->get_where('userrequirements', ['id' => $file_id])->row_array();
             $user_id = $file['user_id'];
-            $file_type = $file['file_type']; // Get the file type from the database
+            $file_type = $file['file_type'];
 
-            // Create a notification message
-            $message = "Your " . ucfirst($file_type) . " file has been " . $status . "."; // Capitalize the file type for better readability
+            // Update user points if approved
+            if ($status == 'approved') {
+                $file_type_data = $this->db->get_where('file_types', ['type_name' => $file_type])->row_array();
+                $points = $file_type_data['points'] ?? 0;
 
-            // Insert the notification into the database
-            $this->db->insert('notifications', [
+                $this->db->set('points', 'points + ' . number_format((float) $points, 2, '.', ''), false);
+                $this->db->where('id', $user_id);
+                $this->db->update('users');
+            }
+
+            // Create a notification
+            $message = "Your " . ucfirst($file_type) . " file has been " . $status . ".";
+            $this->db->insert('notifications_requirements', [
                 'user_id' => $user_id,
                 'message' => $message,
                 'status' => 'unread',
@@ -632,6 +847,166 @@ class conAdmin extends CI_Controller
             echo json_encode(['status' => 'error', 'message' => 'Invalid input or action.']);
         }
     }
+
+    public function adminUserRequirements()
+    {
+        // Fetch all approved file types
+        $data['approved_file_types'] = $this->db->get_where('file_types', ['status' => 'approved'])->result_array();
+        $data['pending_file_types'] = $this->db->get_where('file_types', ['status' => 'pending'])->result_array();
+
+        // Fetch all users (without their uploaded files)
+        $this->db->select('id as user_id, username');
+        $data['users'] = $this->db->get('users')->result_array();
+
+        // Fetch uploaded files for each user
+        foreach ($data['users'] as &$user) {
+            $user['uploaded_files'] = $this->db->get_where('userrequirements', ['user_id' => $user['user_id']])->result_array();
+        }
+
+        $this->load->view('adminHomepage/admin_user_requirements', $data);
+    }
+
+
+    public function getFileTypes()
+    {
+        $file_types = $this->db->get('file_types')->result_array();
+        echo json_encode($file_types);
+    }
+    public function addFileType()
+    {
+        $category = $this->input->post('category');
+        $type_name = $this->input->post('type_name');
+        $points = $this->input->post('points');
+
+        if (!$category || !$type_name) {
+            echo json_encode(['status' => 'error', 'message' => 'All fields are required.']);
+            exit;
+        }
+
+        $data = [
+            'category' => $category,
+            'type_name' => $type_name,
+            'points' => $points,
+            'status' => 'pending' // Default status
+        ];
+
+        $this->db->insert('file_types', $data);
+        echo json_encode(['status' => 'success', 'message' => 'File type added successfully and is pending approval.']);
+    }
+    public function deleteFileType()
+    {
+        $id = $this->input->post('id'); // Get the ID from the request
+
+        if (!$id) {
+            echo json_encode(['status' => 'error', 'message' => 'Invalid request.']);
+            return;
+        }
+
+        // Delete the file type from the database
+        $this->db->where('id', $id)->delete('file_types');
+
+        echo json_encode(['status' => 'success', 'message' => 'File type deleted successfully.']);
+    }
+
+    public function updateFileTypeStatus()
+    {
+        $id = $this->input->post('id');
+        $status = $this->input->post('status'); // 'approved', 'rejected', or 'pending'
+
+        if (!$id || !in_array($status, ['approved', 'rejected', 'pending'])) {
+            echo json_encode(['status' => 'error', 'message' => 'Invalid request.']);
+            return;
+        }
+
+        // Update the status in the database
+        $this->db->where('id', $id)->update('file_types', ['status' => $status]);
+
+        echo json_encode(['status' => 'success', 'message' => 'File type status updated successfully.']);
+    }
+
+
+
+    public function uploadFile($inputFileName, $directory)
+    {
+        $user_id = $this->session->userdata('user_id'); // Retrieve user ID from session
+
+        if (!$user_id) {
+            echo json_encode(['status' => 'error', 'message' => 'User not logged in.']);
+            exit;
+        }
+
+        // Validate if file exists
+        if (!isset($_FILES[$inputFileName]) || $_FILES[$inputFileName]['error'] != 0) {
+            echo json_encode(['status' => 'error', 'message' => 'No file uploaded or upload error.']);
+            exit;
+        }
+
+        // Get the original file name and sanitize
+        $fileName = $_FILES[$inputFileName]['name'];
+        $fileName = preg_replace('/[^A-Za-z0-9\-_\.]/', '_', $fileName); // Only replace special characters, not spaces
+
+
+        if (strlen($fileName) > 30) {
+            echo json_encode(['status' => 'error', 'message' => 'File name exceeds the 30-character limit.']);
+            exit;
+        }
+
+        // Get file type from the form
+        $fileType = $this->input->post('file_type');
+
+        // Set correct upload path based on requirement type
+        $uploadPath = './uploads/' . $directory;
+        if (!is_dir($uploadPath)) {
+            mkdir($uploadPath, 0777, true);
+        }
+
+        $config['upload_path'] = $uploadPath;
+        $config['allowed_types'] = 'jpg|jpeg|png|pdf|doc|docx';
+        $config['max_size'] = 2048; // 2MB limit
+        $config['file_name'] = time() . '_' . $fileName;
+
+        // Load upload library
+        $this->load->library('upload', $config);
+
+        if (!$this->upload->do_upload($inputFileName)) {
+            echo json_encode(['status' => 'error', 'message' => $this->upload->display_errors()]);
+            exit;
+        } else {
+            // File upload successful, save to DB
+            $fileData = $this->upload->data();
+            $data = [
+                'user_id' => $user_id,
+                'file_name' => $fileData['file_name'],
+                'file_path' => 'uploads/' . $directory . '/' . $fileData['file_name'],
+                'file_type' => $fileType,
+                'status' => 'pending',
+                'uploaded_at' => date('Y-m-d H:i:s'),
+            ];
+            $this->db->insert('userrequirements', $data);
+            echo json_encode(['status' => 'success', 'message' => 'File uploaded successfully!']);
+            exit;
+        }
+    }
+
+    // Upload paths
+    public function uploadGeneralFile()
+    {
+        $this->uploadFile('requirements_file', 'requirements');
+    }
+
+    public function uploadMandatoryRequirementFile()
+    {
+        $this->uploadFile('requirements', 'mandatory_requirements'); // Fixed directory
+    }
+
+    public function uploadYearlyFile()
+    {
+        $this->uploadFile('requirements', 'yearly_requirements'); // Fixed directory
+    }
+
+
+
+
 
 
 
@@ -783,6 +1158,15 @@ class conAdmin extends CI_Controller
         $uploaded_files = $this->db->get('userrequirements')->result_array();
         $notifications = $this->admin_model->getNotifications(); // Fetch notifications
 
+        foreach ($uploaded_files as &$file) {
+            $file_type = $file['file_type'];
+            // Get points from the file_types table
+            $file_type_data = $this->db->get_where('file_types', ['type_name' => $file_type])->row_array();
+            $file['points'] = $file_type_data ? $file_type_data['points'] : 0;  // Default points to 0 if not found
+        }
+
+
+
         $data['uploaded_files'] = $uploaded_files;
         $data['users'] = $users;
         $data['notifications'] = $notifications; // Pass notifications
@@ -795,14 +1179,72 @@ class conAdmin extends CI_Controller
         $status = $this->input->post('status');
 
         if ($file_ids && in_array($status, ['approved', 'denied'])) {
-            $this->db->where_in('id', $file_ids);
-            $this->db->update('userrequirements', ['status' => $status]);
+            // Initialize a variable to track whether there are any files that were not updated
+            $filesNotUpdated = [];
 
-            echo json_encode(['status' => 'success', 'message' => ucfirst($status) . ' all selected files.']);
+            foreach ($file_ids as $file_id) {
+                // Check if the file exists
+                $file = $this->db->get_where('userrequirements', ['id' => $file_id])->row_array();
+
+                // Prevent approving files that are already denied
+                if ($file['status'] == 'denied' && $status == 'approved') {
+                    $filesNotUpdated[] = $file_id;
+                    continue;
+                }
+
+                // Prevent denying files that are already approved
+                if ($file['status'] == 'approved' && $status == 'denied') {
+                    $filesNotUpdated[] = $file_id;
+                    continue;
+                }
+
+                // If the status is changing to "approved" and it was previously "pending"
+                if ($status == 'approved' && $file['status'] == 'pending') {
+                    // Update the file status and set the updated_at timestamp
+                    $this->db->where('id', $file_id);
+                    $this->db->update('userrequirements', [
+                        'status' => $status,
+                        'updated_at' => date('Y-m-d H:i:s') // Set the current timestamp
+                    ]);
+
+                    // Increment the user's points
+                    $user_id = $file['user_id'];
+                    $file_type = $file['file_type'];
+
+                    // Fetch points associated with the file type
+                    $file_type_data = $this->db->get_where('file_types', ['type_name' => $file_type])->row_array();
+                    $points = (float) ($file_type_data['points'] ?? 0.00);
+
+                    // Increment the user's points (assuming the points are in decimal format now)
+                    // Increment the user's points (assuming the points are in decimal format now)
+                    $this->db->set('points', 'points + ' . number_format((float) $points, 2, '.', ''), false);
+                    $this->db->where('id', $user_id);
+                    $this->db->update('users');
+
+                } else {
+                    // Update the file status without changing points if the file was not pending
+                    $this->db->where('id', $file_id);
+                    $this->db->update('userrequirements', [
+                        'status' => $status,
+                        'updated_at' => date('Y-m-d H:i:s') // Set the current timestamp
+                    ]);
+                }
+            }
+
+            // Provide feedback on files that were not updated
+            if (count($filesNotUpdated) > 0) {
+                echo json_encode(['status' => 'success', 'message' => ucfirst($status) . ' all selected files. However, some files were already approved or denied and were not updated.', 'files_not_updated' => $filesNotUpdated]);
+            } else {
+                echo json_encode(['status' => 'success', 'message' => ucfirst($status) . ' all selected files.']);
+            }
         } else {
             echo json_encode(['status' => 'error', 'message' => 'Invalid request.']);
         }
     }
+
+
+
+
 
     public function bulkDeleteFiles()
     {

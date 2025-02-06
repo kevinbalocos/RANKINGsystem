@@ -15,6 +15,9 @@
 
     <!-- SweetAlert2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.0/dist/sweetalert2.all.min.js"></script>
+    <!-- Add jQuery before SweetAlert2 -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 
     <title>Register</title>
 </head>
@@ -69,7 +72,11 @@
         </div>
     </div>
 
-   
+    <script>
+
+
+    </script>
+
 
 </body>
 

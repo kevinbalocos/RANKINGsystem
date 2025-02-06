@@ -186,19 +186,26 @@ class model_faculty extends CI_Model
         $this->db->where('id', $facultyId);
         return $this->db->delete('faculties');
     }
-
-    public function saveFileSubmission($user_id, $filePath, $label)
+    public function getFellowFacultyMembers($user_id)
     {
-        // Save file and label to the database (adjust according to your DB structure)
+        $this->db->where('id !=', $user_id); // Exclude the current user
+        return $this->db->get('users')->result_array();
+    }
+
+    public function saveFileSubmission($user_id, $file_path, $label, $next_rank_label, $next_rank_order, $approved)
+    {
         $data = [
             'user_id' => $user_id,
-            'file_path' => $filePath,
+            'file_path' => $file_path,
             'label' => $label,
-            'submitted_at' => date('Y-m-d H:i:s')
+            'next_rank_label' => $next_rank_label,  // Store the next rank label
+            'next_rank_order' => $next_rank_order,  // Store the next rank order
+            'submitted_at' => date('Y-m-d H:i:s'),
+            'approved' => $approved
         ];
-
-        return $this->db->insert('file_submissions', $data);  // Assuming you have a file_submissions table
+        return $this->db->insert('file_submissions', $data);
     }
+
 
     public function getFileSubmissionById($submission_id)
     {
@@ -253,12 +260,90 @@ class model_faculty extends CI_Model
 
             case 'Professor I ':
                 return 'Professor II';
+            case 'Professor II ':
+                return 'Professor II';
 
 
             default:
                 return $current_rank; // No progression
         }
     }
+
+    public function getAllFileSubmissions()
+    {
+        $this->db->select('file_submissions.*, users.username, file_submissions.submitted_at'); // Include submission timestamp
+        $this->db->from('file_submissions');
+        $this->db->join('users', 'users.id = file_submissions.user_id'); // Join with users table
+        $this->db->order_by('file_submissions.submitted_at', 'DESC');
+        return $this->db->get()->result_array();
+    }
+    public function deleteFileSubmission($submission_id)
+    {
+        return $this->db->delete('file_submissions', ['id' => $submission_id]);
+    }
+    // In model_faculty
+    public function awardPoints($user_id, $points)
+    {
+        // Get current points for the user
+        $this->db->select('points');
+        $this->db->where('id', $user_id);
+        $user = $this->db->get('users')->row();
+
+        // Add the points
+        $new_points = $user->points + $points;
+
+        // Update the user's points
+        $this->db->set('points', $new_points);
+        $this->db->where('id', $user_id);
+        $this->db->update('users');
+    }
+    // In your model_faculty
+    public function getUserPoints($user_id)
+    {
+        // Get the current points for the user
+        $this->db->select('points');
+        $this->db->where('id', $user_id);
+        $user = $this->db->get('users')->row();
+
+        return $user ? $user->points : 0;  // Return the points, or 0 if the user does not exist
+    }
+    public function getPreviousRank($user_id)
+    {
+        // This assumes you have a 'user_rank_history' table where previous ranks are stored.
+        // If not, you might need to adjust the logic or track it in your system.
+
+        $this->db->select('rank');
+        $this->db->from('user_rank_history');
+        $this->db->where('user_id', $user_id);
+        $this->db->order_by('date_updated', 'DESC');
+        $this->db->limit(1, 1); // Get the second last record (previous rank)
+        $query = $this->db->get();
+
+        if ($query->num_rows() > 0) {
+            return $query->row()->rank;
+        }
+
+        return null; // Return null if no previous rank is found
+    }
+
+    public function addfaculty_rankup_Notification($user_id, $message)
+    {
+        $data = [
+            'user_id' => $user_id,
+            'message' => $message,
+            'status' => 'unread',  // Set the status to unread initially
+        ];
+        return $this->db->insert('notifications_faculty_rankup', $data);
+    }
+
+    public function getNotificationsByUser($user_id)
+    {
+        return $this->db->where('user_id', $user_id)
+            ->order_by('created_at', 'DESC')
+            ->get('notifications_faculty_rankup')
+            ->result_array();
+    }
+
 
 
 }

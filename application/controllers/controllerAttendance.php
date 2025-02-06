@@ -111,11 +111,10 @@ class controllerAttendance extends CI_Controller
     public function deleteNotification($notification_id)
     {
         if ($this->auth_model->deleteNotificationById($notification_id)) {
-            $this->session->set_flashdata('success', 'Notification deleted successfully.');
+            echo json_encode(["success" => true]);
         } else {
-            $this->session->set_flashdata('error', 'Failed to delete notification.');
+            echo json_encode(["success" => false]);
         }
-        redirect('conAdmin');
     }
     public function cleanOldNotifications()
     {
@@ -126,11 +125,10 @@ class controllerAttendance extends CI_Controller
     public function deleteAllNotifications()
     {
         if ($this->auth_model->deleteAllNotifications()) {
-            $this->session->set_flashdata('success', 'All notifications deleted successfully.');
+            echo json_encode(["success" => true]);
         } else {
-            $this->session->set_flashdata('error', 'Failed to delete all notifications.');
+            echo json_encode(["success" => false]);
         }
-        redirect('conAdmin');
     }
     public function deleteAttendanceRecords($attendance_id)
     {
@@ -162,7 +160,6 @@ class controllerAttendance extends CI_Controller
             $this->session->set_flashdata('error', 'No attendance records selected.');
         }
 
-        redirect('conAdmin');
     }
 
 

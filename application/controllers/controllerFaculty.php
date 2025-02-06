@@ -14,14 +14,19 @@ class controllerFaculty extends CI_Controller
         $this->load->model('admin_model');
         $this->load->model('home_model');
         $this->load->model('model_faculty');
+        $this->load->library('upload');
+
 
         date_default_timezone_set('Asia/Manila');
     }
-
+    // In controllerFaculty
     public function UserFaculty()
     {
         $user_id = $this->session->userdata('user_id');
         $user = $this->model_faculty->getUserById($user_id);
+
+        // Fetch user points using the new getUserPoints method
+        $user_points = $this->model_faculty->getUserPoints($user_id);
 
         // Get the rank label (current rank)
         $rank_label = $this->getRankLabel($user['rank'] ?? 'Unspecified');
@@ -35,15 +40,22 @@ class controllerFaculty extends CI_Controller
         // Get the next rank's order (rank order)
         $next_rank_order = $this->getNextRankOrder($user['rank'] ?? 'Unspecified');
 
+        // Fetch fellow faculty members (excluding the current user)
+        $fellow_faculty_members = $this->model_faculty->getFellowFacultyMembers($user_id);
+
         // Pass the necessary data to the view
         $data['user'] = $user;
         $data['rank_label'] = $rank_label;
-        $data['next_rank_label'] = $next_rank_label; // Pass the next rank's requirement
-        $data['file_submissions'] = $file_submissions; // Add file submissions data
-        $data['next_rank_order'] = $next_rank_order; // Add the next rank order data
+        $data['user_points'] = $user_points;
+        $data['next_rank_label'] = $next_rank_label;
+        $data['file_submissions'] = $file_submissions;
+        $data['next_rank_order'] = $next_rank_order;
+        $data['fellow_faculty_members'] = $fellow_faculty_members;
 
         $this->load->view('Homepage/userFaculty', $data);
     }
+
+
 
     public function getNextRankOrder($currentRank)
     {
@@ -60,13 +72,12 @@ class controllerFaculty extends CI_Controller
             'Professor I',
             'Professor II'
         ];
-
         $currentRankIndex = array_search($currentRank, $rankOrder);
         if ($currentRankIndex !== false && $currentRankIndex + 1 < count($rankOrder)) {
             return $rankOrder[$currentRankIndex + 1];
         }
-
         return 'No next rank available';
+
     }
 
     public function getNextRankLabel($currentRank)
@@ -145,14 +156,16 @@ class controllerFaculty extends CI_Controller
 
         $rank = $user['rank'];
         $label = $this->getRankLabel($rank);
+        $next_rank_label = $this->getNextRankLabel($rank); // Get the next rank label
+        $next_rank_order = $this->getNextRankOrder($rank); // Get the next rank order
 
         if ($_FILES['file']['error'] == 0) {
             $uploadPath = 'uploads/rank_requirements_faculty';
             $filePath = $uploadPath . $_FILES['file']['name'];
 
             if (move_uploaded_file($_FILES['file']['tmp_name'], $filePath)) {
-                // Save file and label, set 'approved' to 0
-                $this->model_faculty->saveFileSubmission($user_id, $filePath, $label, 0);  // Add approval status as 0
+                // Save file, label, next rank label, next rank order, and set 'approved' to 0
+                $this->model_faculty->saveFileSubmission($user_id, $filePath, $label, $next_rank_label, $next_rank_order, 0);
 
                 echo json_encode(['success' => true, 'message' => 'File uploaded successfully with label: ' . $label]);
             } else {
@@ -162,22 +175,64 @@ class controllerFaculty extends CI_Controller
             echo json_encode(['success' => false, 'message' => 'No file uploaded or error in file upload']);
         }
     }
-
     public function approveFile($submission_id)
     {
         $submission = $this->model_faculty->getFileSubmissionById($submission_id);
 
         if ($submission) {
-            // Set the file as approved
-            if ($this->model_faculty->approveFileSubmission($submission_id)) {
-                // Optionally: Update user's rank or perform other actions
-                $this->model_faculty->updateUserRankAfterApproval($submission['user_id']); // Call the model method here
-                echo json_encode(['success' => true, 'message' => 'File approved successfully and rank updated.']);
+            $approval = $this->model_faculty->approveFileSubmission($submission_id);
+
+            if ($approval) {
+                $this->model_faculty->awardPoints($submission['user_id'], 1000);
+                $this->model_faculty->updateUserRankAfterApproval($submission['user_id']);
+
+                // Add Notification for Rank Up
+                $message = "Your file has been approved, and you've been awarded 1000 points. Your rank has been updated!";
+                $this->model_faculty->addfaculty_rankup_Notification($submission['user_id'], $message);
+
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'File approved, points awarded, rank updated, and notification sent.'
+                ]);
             } else {
-                echo json_encode(['success' => false, 'message' => 'Failed to approve file']);
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Failed to approve the file.'
+                ]);
             }
         } else {
-            echo json_encode(['success' => false, 'message' => 'Submission not found']);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Submission not found.'
+            ]);
+        }
+    }
+
+    public function declineFile($submission_id)
+    {
+        $submission = $this->model_faculty->getFileSubmissionById($submission_id);
+
+        if ($submission) {
+            if ($this->model_faculty->deleteFileSubmission($submission_id)) {
+                // Add Notification for Decline
+                $message = "Your file submission has been declined.";
+                $this->model_faculty->addfaculty_rankup_Notification($submission['user_id'], $message);  // Corrected the method name here
+
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'File declined successfully and notification sent.'
+                ]);
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Failed to decline the file.'
+                ]);
+            }
+        } else {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Submission not found.'
+            ]);
         }
     }
 

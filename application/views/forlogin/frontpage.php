@@ -17,6 +17,15 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.0/dist/sweetalert2.min.css">
+
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.0/dist/sweetalert2.all.min.js"></script>
+    <!-- Add jQuery before SweetAlert2 -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
 
     <style>
         /* Basic custom styles for layout */
@@ -26,6 +35,34 @@
             overflow: hidden;
             max-height: 1000vh;
             /* Maximum height of the body */
+        }
+
+        .main-container {
+            display: flex;
+            padding: 2rem;
+        }
+
+        .left-section,
+        .right-section {
+            padding: 1.5rem;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .left-section {
+            flex: 1;
+            margin-right: 2rem;
+        }
+
+        .right-section {
+            flex: 1;
+            background-color: #ffffff;
+            border-left: 1px solid #e5e7eb;
+        }
+
+        .filter-section {
+            margin-bottom: 1.5rem;
         }
 
         .navbar {
@@ -152,23 +189,73 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item"><a class="nav-link" href="#" data-view="login">Login</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#" data-view="register">Register</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" data-view="viewregister">Register</a></li>
                     <li class="nav-item"><a class="nav-link" href="#" data-view="viewadmin">Admin</a></li>
-                    <li class="nav-item"><a class="nav-link" href="<?= base_url('auth/aboutranking') ?>">About</a></li>
+                    <!-- <li class="nav-item"><a class="nav-link" href="<?= base_url('auth/aboutranking') ?>">About</a></li> -->
                     <li class="nav-item"><a class="nav-link" href="<?= base_url('auth/contact') ?>">Contact</a></li>
 
                 </ul>
             </div>
         </div>
     </nav>
+    <div class="main-container">
 
-    <!-- Dynamic Content Container -->
-    <div id="content-container" class="container mt-4">
-        <div class="text-center">
-            <h2>Welcome to the Platform</h2>
-            <p>Select a navigation item to get started.</p>
+        <!-- Left Section -->
+        <div class="left-section">
+            <!-- Dynamic Content Container -->
+            <div id="content-container" class="container mt-4">
+                <div class="text-center">
+                    <h2>Welcome to the Platform</h2>
+                    <p>Select a navigation item to get started.</p>
 
+                </div>
+            </div>
         </div>
+        <div class="right-section bg-white rounded-xl shadow-lg p-6 w-full">
+            <h4 class="text-center">User Status</h4>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Date Registered</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (isset($users) && !empty($users)): ?>
+                        <?php foreach ($users as $user): ?>
+                            <tr>
+                                <td><?= $user['username']; ?></td>
+                                <td><?= $user['email']; ?></td>
+                                <td>
+                                    <?php
+                                    switch ($user['status']) {
+                                        case 'pending':
+                                            echo '<span class="badge bg-warning">Pending</span>';
+                                            break;
+                                        case 'approved':
+                                            echo '<span class="badge bg-success">Approved</span>';
+                                            break;
+                                        case 'rejected':
+                                            echo '<span class="badge bg-danger">Rejected</span>';
+                                            break;
+                                    }
+                                    ?>
+                                </td>
+                                <td><?= date('Y-m-d H:i:s', strtotime($user['created_at'])); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="4">No pending users found.</td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+
+
     </div>
 
     <!-- Hero Section -->
@@ -178,9 +265,7 @@
             <p>Streamline your tasks, track rankings, and achieve more—all in one place!</p>
         </div>
     </div>
-
-    <!-- Features Section -->
-    <section class="features">
+    <!-- <section class="features">
         <div class="container">
             <div class="row">
                 <div class="col-md-4">
@@ -208,7 +293,6 @@
         </div>
     </section>
 
-    <!-- Search Bar -->
     <div class="container search-bar">
         <div class="row">
             <div class="col-md-8 offset-md-2">
@@ -221,12 +305,11 @@
                 </form>
             </div>
         </div>
-    </div>
+    </div> -->
 
-    <!-- Footer -->
-    <footer class="footer">
+    <!-- <footer class="footer">
         <p>&copy; <?= date('Y') ?> HR Management Portal. <a href="#">Privacy Policy</a></p>
-    </footer>
+    </footer> -->
 
     <!-- JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"

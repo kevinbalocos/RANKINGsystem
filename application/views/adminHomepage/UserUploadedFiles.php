@@ -56,6 +56,10 @@
             height: 100%;
             border-radius: 0.375rem;
         }
+
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 
@@ -86,7 +90,19 @@
 
 
 
-
+            <!-- Filter Buttons and Search Bar -->
+            <div class="buttons flex justify-between items-center mb-6">
+                <div class="flex gap-4">
+                    <button class="bg-purple-200 px-4 py-2 rounded hover:bg-purple-300 transition filter-btn"
+                        onclick="filterFiles('All')">All Files</button>
+                    <button class="bg-green-200 px-4 py-2 rounded hover:bg-green-300 transition filter-btn"
+                        onclick="filterFiles('Credential')">Credential</button>
+                    <button class="bg-yellow-200 px-4 py-2 rounded hover:bg-yellow-300 transition filter-btn"
+                        onclick="filterFiles('Mandatory')">Mandatory</button>
+                    <button class="bg-red-200 px-4 py-2 rounded hover:bg-red-300 transition filter-btn"
+                        onclick="filterFiles('Yearly Event')">Yearly Event</button>
+                </div>
+            </div>
 
             <!-- User Uploaded Files Table -->
             <div class="bg-white shadow-lg rounded-lg p-6 overflow-x-auto">
@@ -104,9 +120,18 @@
                             <th
                                 class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                 User Icon
+                            </th>
                             <th
                                 class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                 File Name
+                            </th>
+                            <th
+                                class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                Points
+                            </th>
+                            <th
+                                class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                Category
                             </th>
                             <th
                                 class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
@@ -116,92 +141,181 @@
                                 class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                 Status
                             </th>
-
+                            <th
+                                class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                Date Uploaded
+                            </th>
+                            <th
+                                class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                Date Modified
+                            </th>
                             <th
                                 class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                 Actions
                             </th>
                         </tr>
                     </thead>
+                    <?php
+                    $grouped_files = [];
+                    foreach ($uploaded_files as $file) {
+                        $grouped_files[$file['user_id']][] = $file;
+                    }
+                    ?>
+
                     <tbody id="filesTable" class="bg-white divide-y divide-gray-200">
-                        <?php if (!empty($uploaded_files)): ?>
-                            <?php
-                            // Separate pending files from others
-                            $pending_files = array_filter($uploaded_files, function ($file) {
-                                return strtolower($file['status']) === 'pending';
-                            });
-
-                            $other_files = array_filter($uploaded_files, function ($file) {
-                                return strtolower($file['status']) !== 'pending';
-                            });
-
-                            // Display pending files first
-                            foreach (array_merge($pending_files, $other_files) as $file):
+                        <?php if (!empty($grouped_files)): ?>
+                            <?php foreach ($grouped_files as $user_id => $files): ?>
+                                <?php
+                                // Fetch user data
+                                $user = array_filter($users, function ($u) use ($user_id) {
+                                    return $u['id'] == $user_id;
+                                });
+                                $user = reset($user);
                                 ?>
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
-                                        <input type="checkbox" value="<?= $file['id'] ?>" class="file-checkbox">
+                                <tr class="user-row hover:bg-gray-50 cursor-pointer">
+                                    <td class="px-6 py-4">
+                                        <input type="checkbox" class="select-user-checkbox" data-user-id="<?= $user_id ?>"
+                                            onclick="toggleUserFiles(<?= $user_id ?>)">
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        <?php
-                                        // Fetch the username or email of the user who uploaded the file
-                                        $user = array_filter($users, function ($u) use ($file) {
-                                            return $u['id'] == $file['user_id'];
-                                        });
-                                        $user = reset($user);
-                                        echo htmlspecialchars($user['username'] ?? 'Unknown');
-                                        ?>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                                    <td class="px-6 py-4"><?= htmlspecialchars($user['username'] ?? 'Unknown') ?></td>
+                                    <td class="px-6 py-4">
                                         <img class="w-10 h-10 rounded-full"
                                             src="<?= base_url($user['uploaded_profile_image'] ?? 'uploads/default_profiles/default_profile.avif'); ?>"
                                             alt="Profile Image">
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
-                                        <?= htmlspecialchars($file['file_name']) ?>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        <?= ucfirst(htmlspecialchars($file['file_type'])) ?>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        <?= ucfirst(htmlspecialchars($file['status'])) ?>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        <a href="#"
-                                            onclick="confirmDownload('<?= base_url(htmlspecialchars($file['file_path'])) ?>', '<?= htmlspecialchars($file['file_name']) ?>')"
-                                            class="text-black-600 hover:text-blue-800">
-                                            <i class="fas fa-download"></i>
-                                        </a>
-                                        <?php if ($file['status'] === 'pending'): ?>
-                                            <button onclick="updateFileStatus(<?= $file['id'] ?>, 'approved')"
-                                                class="ml-2 text-black-600 hover:text-green-800">
-                                                <i class="fas fa-check-circle"></i>
-                                            </button>
-                                            <button onclick="updateFileStatus(<?= $file['id'] ?>, 'denied')"
-                                                class="ml-2 text-black-600 hover:text-red-800">
-                                                <i class="fas fa-times-circle"></i>
-                                            </button>
-                                        <?php endif; ?>
-                                        <button onclick="deleteFile(<?= $file['id'] ?>)"
-                                            class="ml-2 text-black-600 hover:text-red-800">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
+                                    <td colspan="5" class="px-6 py-4 text-center text-gray-500 cursor-pointer"
+                                        onclick="toggleFiles(<?= $user_id ?>)">
+                                        <strong><?= count($files) ?> Files Uploaded (Click to Expand)</strong>
                                     </td>
                                 </tr>
+
+
+                                <?php foreach ($files as $file): ?>
+                                    <tr class="file-row user-files-<?= $user_id ?> hidden">
+                                        <td class="px-6 py-4">
+                                            <input type="checkbox" class="file-checkbox user-<?= $user_id ?>"
+                                                value="<?= $file['id'] ?>">
+                                        </td>
+                                        <td class="px-6 py-4"><?= htmlspecialchars($user['username'] ?? 'Unknown') ?></td>
+                                        <td class="px-6 py-4">
+                                            <img class="w-10 h-10 rounded-full"
+                                                src="<?= base_url($user['uploaded_profile_image'] ?? 'uploads/default_profiles/default_profile.avif'); ?>"
+                                                alt="Profile Image">
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <?php
+                                            $filePath = base_url(htmlspecialchars($file['file_path']));
+                                            $fileName = htmlspecialchars($file['file_name']);
+                                            $fileExtension = pathinfo($fileName, PATHINFO_EXTENSION);
+                                            $previewableExtensions = ['jpg', 'jpeg', 'png', 'gif', 'pdf'];
+                                            ?>
+                                            <?php if (in_array(strtolower($fileExtension), $previewableExtensions)): ?>
+                                                <a href="<?= $filePath ?>" target="_blank"
+                                                    class="text-blue-500 hover:underline"><?= $fileName ?></a>
+                                            <?php else: ?>
+                                                <a href="<?= $filePath ?>" download
+                                                    class="text-blue-500 hover:underline"><?= $fileName ?> (Download)</a>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td class="px-4 py-3"><?= htmlspecialchars($file['points']) ?></td> <!-- Display points -->
+
+                                        <td class="px-4 py-3">
+                                            <?= (strpos($file['file_path'], 'mandatory_requirements') !== false)
+                                                ? '<span class="text-red-500">Mandatory</span>'
+                                                : ((strpos($file['file_path'], 'yearly_requirements') !== false)
+                                                    ? '<span class="text-blue-500">Yearly</span>'
+                                                    : '<span class="text-green-500">Credential</span>'); ?>
+                                        </td>
+                                        <td class="px-6 py-4"><?= ucfirst(htmlspecialchars($file['file_type'])) ?></td>
+                                        <td class="px-6 py-4"><?= ucfirst(htmlspecialchars($file['status'])) ?></td>
+                                        <td class="px-4 py-3"><?= date('F j, Y - g:i A', strtotime($file['uploaded_at'])) ?></td>
+
+                                        <td class="px-4 py-3">
+                                            <?php if (empty($file['updated_at'])): ?>
+                                                <span class="text-gray-500">Not Yet Modified</span>
+                                                <!-- Display "Unread" if updated_at is empty -->
+                                            <?php else: ?>
+                                                <?= date('F j, Y - g:i A', strtotime($file['updated_at'])) ?>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <?php if ($file['status'] !== 'approved' && $file['status'] !== 'denied'): ?>
+                                                <button onclick="updateFileStatus(<?= $file['id'] ?>, 'approved')"
+                                                    class="ml-2 text-green-600 hover:text-green-800">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                                <button onclick="updateFileStatus(<?= $file['id'] ?>, 'denied')"
+                                                    class="ml-2 text-yellow-600 hover:text-yellow-800">
+                                                    <i class="fas fa-ban"></i>
+                                                </button>
+                                            <?php endif; ?>
+                                            <button onclick="deleteFile(<?= $file['id'] ?>)"
+                                                class="ml-2 text-red-600 hover:text-red-800">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="7" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                                    No files uploaded yet.
-                                </td>
+                                <td colspan="7" class="px-6 py-4 text-center text-gray-500">No files uploaded yet.</td>
                             </tr>
                         <?php endif; ?>
                     </tbody>
-
                 </table>
             </div>
         </div>
+        <script>
+            // Function to toggle the visibility of the user's files
+            function toggleFiles(userId) {
+                document.querySelectorAll('.user-files-' + userId).forEach(row => {
+                    row.classList.toggle('hidden');
+                });
+            }
 
+            // Function to select/deselect all files for a specific user
+            function toggleUserFiles(userId) {
+                const isChecked = document.querySelector(`.select-user-checkbox[data-user-id="${userId}"]`).checked;
+                document.querySelectorAll(`.user-${userId}`).forEach(checkbox => {
+                    checkbox.checked = isChecked;
+                });
+            }
+
+            // Function to select/deselect all files
+            function toggleSelectAll() {
+                const isChecked = document.getElementById('selectAll').checked;
+                document.querySelectorAll('.file-checkbox').forEach(checkbox => {
+                    checkbox.checked = isChecked;
+                });
+            }
+
+        </script>
+
+
+        <script>
+            function filterFiles(category) {
+                // Get all the table rows
+                const rows = document.querySelectorAll('#filesTable tr');
+
+                // Loop through each row and apply the filter
+                rows.forEach(row => {
+                    const categoryCell = row.querySelector('td:nth-child(5)'); // Get the category cell (5th column)
+
+                    if (!categoryCell) return; // Skip if there's no category cell (e.g., empty rows)
+
+                    const fileCategory = categoryCell.textContent.trim().toLowerCase();
+
+                    if (category === 'All' || fileCategory === category.toLowerCase()) {
+                        row.style.display = ''; // Show the row
+                    } else {
+                        row.style.display = 'none'; // Hide the row
+                    }
+                });
+            }
+
+        </script>
         <!-- Right Section -->
         <div class="right-section">
 

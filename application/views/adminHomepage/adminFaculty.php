@@ -34,7 +34,7 @@
             flex: 1;
             background-color: #f9fafb;
             border-left: 1px solid #e5e7eb;
-            max-width: 700px;
+            max-width: 350px;
         }
 
         th,
@@ -74,7 +74,7 @@
                                 </td>
 
                                 <td class="px-4 py-2 text-sm text-gray-800"><?= htmlspecialchars($user['username']); ?></td>
-                                <td class="px-4 py-2 text-sm text-gray-800">
+                                <!-- <td class="px-4 py-2 text-sm text-gray-800">
                                     <select name="rank" class="border border-gray-300 rounded-md px-2 py-1"
                                         onchange="updateRank(<?= $user['id']; ?>, this.value)">
                                         <option value="">-- Select Rank --</option>
@@ -84,6 +84,9 @@
                                             </option>
                                         <?php endforeach; ?>
                                     </select>
+                                </td> -->
+                                <td class="px-4 py-2 text-sm text-gray-800">
+                                    <?= !empty($user['rank']) ? htmlspecialchars($user['rank']) : '<span class="text-gray-500">No Rank</span>'; ?>
                                 </td>
                                 <td class="px-4 py-2 text-sm text-gray-800">
                                     <select name="faculty" class="border border-gray-300 rounded-md px-2 py-1"
@@ -108,9 +111,9 @@
             <h3 class="text-lg font-semibold text-gray-800 mb-6">Quick Actions</h3>
 
             <!-- Two-Column Layout for Cards -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <!-- Card: Add Rank -->
-                <div class="bg-white shadow-lg rounded-lg p-6">
+            <div class="grid grid-cols-1 gap-6">
+                <!-- 
+            <div class="bg-white shadow-lg rounded-lg p-6">
                     <h4 class="text-sm font-medium text-gray-700 mb-2">Add Rank</h4>
                     <form id="add-rank-form" class="space-y-4">
                         <input type="text"
@@ -122,7 +125,6 @@
                     </form>
                 </div>
 
-                <!-- Card: Add Faculty -->
                 <div class="bg-white shadow-lg rounded-lg p-6">
                     <h4 class="text-sm font-medium text-gray-700 mb-2">Add Faculty</h4>
                     <form id="add-faculty-form" class="space-y-4">
@@ -133,7 +135,7 @@
                             class="w-full px-1 py-1 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition duration-150"
                             type="submit">Add Faculty</button>
                     </form>
-                </div>
+                </div> -->
 
 
                 <!-- Card: Bulk Actions -->
@@ -188,7 +190,7 @@
                 </div>
 
                 <!-- Card: Delete Rank -->
-                <div class="bg-white shadow-lg rounded-lg p-6">
+                <!-- <div class="bg-white shadow-lg rounded-lg p-6">
                     <h4 class="text-sm font-medium text-gray-700 mt-5 mb-2">Delete Rank</h4>
                     <select id="delete-rank"
                         class="w-full px-1 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:outline-none mb-2">
@@ -202,7 +204,6 @@
                         onclick="deleteRank()">
                         Delete Rank
                     </button>
-                    <!-- Card: Delete Faculty -->
                     <h4 class="text-sm font-medium text-gray-700 mb-2">Delete Faculty</h4>
                     <select id="delete-faculty"
                         class="w-full px-1 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:outline-none mb-2">
@@ -216,7 +217,7 @@
                         onclick="deleteFaculty()">
                         Delete Faculty
                     </button>
-                </div>
+                </div> -->
 
 
             </div>

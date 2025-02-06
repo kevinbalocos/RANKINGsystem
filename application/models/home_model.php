@@ -7,10 +7,9 @@ class home_model extends CI_Model
     public function __construct()
     {
         parent::__construct();
+        $this->load->database();
+
     }
-
-
-
     //ADMIN
     //ADMIN
     //ADMIN
@@ -33,158 +32,108 @@ class home_model extends CI_Model
         return false;
     }
 
-    //PRODUCTS TO GET ORDER
-    //PRODUCTS TO GET ORDER
-    //PRODUCTS TO GET ORDER
 
-    public function getProducts()
+    public function setlogin($email, $password)
     {
+        $query = $this->db->get_where('users', ['email' => $email]);
+        $user = $query->row_array();
 
-        $query = $this->db->get('products');
-        return $query->result_array();
-    }
-
-    public function getProductDetails($productId)
-    {
-
-        $query = $this->db->get_where('products', ['product_id' => $productId]);
-        return $query->row_array();
-    }
-
-    public function saveOrder($user_id, $productId, $product_name, $quantity)
-    {
-        $product = $this->getProductDetails($productId);
-
-        if (!$product) {
+        if ($user && password_verify($password, $user['password'])) {
+            return $user;  // Include status in the response
+        } else {
             return false;
         }
-
-        $totalPrice = $product['price'] * $quantity;
-
-        date_default_timezone_set('Asia/Manila');
-
-        $data = [
-            'user_id' => $user_id,
-            'product_name' => $product_name,
-            'product_id' => $productId,
-            'quantity' => $quantity,
-            'total_price' => $totalPrice,
-            'order_date' => date('Y-m-d h:i:s A'),
-            'status' => 'Pending',
-        ];
-
-        // Inside saveOrder function
-        $this->db->insert('usersorder', $data);
-
-        // Fetch the inserted order_id
-        $order_id = $this->db->insert_id();
-
-        // Log client action with the correct order_id
-        $this->logClientAction('buy', $order_id);
     }
 
 
-
-
-
-
-
-
-
-    //STOCKS
-    //STOCKS
-    //STOCKS
-
-    public function updateStocksProducts($productId, $quantity)
+    public function getPendingUsers()
     {
-        $product = $this->getProductDetails($productId);
-
-        if ($product) {
-            $itemSold = $product['item_sold'] + $quantity;
-
-            $this->db->where('product_id', $productId);
-            $this->db->update('products', ['item_sold' => $itemSold]);
-
-            if ($this->db->affected_rows() > 0) {
-                return true;
-            } else {
-                return false;
-            }
-        }
-
-        return false;
-    }
-    public function deductStock($productId, $quantity)
-    {
-        $product = $this->getProductDetails($productId);
-
-        if ($product) {
-            $newStock = $product['stock'] - $quantity;
-
-            $this->db->where('product_id', $productId);
-            $this->db->update('products', ['stock' => $newStock]);
-
-            return $this->db->affected_rows() > 0;
-        }
-
-        return false;
-    }
-
-
-
-    //! CLIENTS ORDERS
-
-    public function getCustomerOrders($user_id)
-    {
-        $this->db->where('user_id', $user_id);
-        $query = $this->db->get('usersorder');
+        $query = $this->db->get_where('users', ['status' => 'pending']);
         return $query->result_array();
     }
-    public function getOrderDetails($orderId)
+
+    public function updateUserStatus($user_id, $status)
     {
-        $query = $this->db->get_where('usersorder', ['order_id' => $orderId]);
+        $this->db->where('id', $user_id);
+        return $this->db->update('users', ['status' => $status]);
+    }
+
+
+    public function register($data)
+    {
+
+        return $this->db->insert('users', $data);
+    }
+    public function getUserByEmail($email)
+    {
+        $query = $this->db->get_where('users', ['email' => $email]);
         return $query->row_array();
     }
 
-    public function deleteOrder($orderId)
+
+
+
+    public function getUsers()
     {
+        $query = $this->db->get('users');
 
-        $this->db->where('order_id', $orderId);
-        $this->db->delete('usersorder');
+        if (!$query) {
 
+            $db_error = $this->db->error();
+            log_message('error', 'Database Error: ' . print_r($db_error, true));
+        }
 
-        $this->logClientAction('delete', $orderId);
-
-    }
-
-
-
-
-    //! CLIENT NOTIFICATIONS
-    public function getRecentClientActions()
-    {
-        $this->db->order_by('created_at', 'desc');
-        $this->db->limit(10); // Changable limit 
-        $query = $this->db->get('client_notifications');
         return $query->result_array();
     }
 
-    private function logClientAction($action, $orderId)
+    public function getUserById($user_id)
     {
-        $orderDetails = $this->getOrderDetails($orderId);
-        $productName = $orderDetails['product_name'];
+        $query = $this->db->get_where('users', ['id' => $user_id]);
 
-        $data = [
-            'action' => $action,
-            'order_id' => $orderId,
-            'product_name' => $productName,
-        ];
+        if ($query->num_rows() > 0) {
+            $user = $query->row_array();
 
-        $this->db->insert('client_notifications', $data);
+            if (!empty($user['birth_date'])) {
+                $user['birth_date'] = date('Y-m-d', strtotime($user['birth_date']));
+            }
+
+            return $user;
+        } else {
+            return false;
+        }
+    }
+
+    public function validateUserId($user_id)
+    {
+        return $this->db->where('id', $user_id)->count_all_results('users') > 0;
     }
 
 
- 
+
+    public function updateUser($user_id, $user_data)
+    {
+        $this->db->where('id', $user_id);
+        return $this->db->update('users', $user_data);
+    }
+
+    public function deleteUser($user_id)
+    {
+        // First, delete related notifications
+        $this->db->where('user_id', $user_id);
+        $this->db->delete('notifications');
+
+        // Now delete the user
+        $this->db->where('id', $user_id);
+        $this->db->delete('users');
+
+    }
+
+
+
+
+
+
+
 
 
 
