@@ -133,8 +133,8 @@
     <div class="main-container">
 
         <!-- Left Section -->
-        <div class="bg-white left-section">
-            <!-- <div class="filter-section">
+        <!-- <div class="bg-white left-section"> -->
+        <!-- <div class="filter-section">
                 <h3 class="text-lg font-medium text-gray-700">USER TASKS </h3>
                 <label for="statusFilter" class="text-sm font-medium text-gray-700">Filter by Status:</label>
                 <select id="statusFilter">
@@ -196,7 +196,7 @@
                     <?php endif; ?>
                 </tbody>
             </table> -->
-        </div>
+        <!-- </div> -->
 
         <!-- Right Section -->
         <div class="right-section bg-white rounded-xl shadow-lg p-6 w-full overflow-y-auto">
@@ -252,12 +252,12 @@
                                         <?php if (!$submission['approved']): ?>
                                             <a href="javascript:void(0);" class="approve-link text-green-400 hover:text-green-500"
                                                 data-id="<?= $submission['id']; ?>">
-                                                <i class="fas fa-check-circle text-lg"></i> <!-- Approve Icon -->
+                                                <i class="fas fa-check-circle text-lg"></i>
                                             </a>
                                         <?php endif; ?>
                                         <a href="javascript:void(0);" class="decline-link text-red-400 hover:text-red-500"
                                             data-id="<?= $submission['id']; ?>">
-                                            <i class="fas fa-times-circle text-lg"></i> <!-- Decline Icon -->
+                                            <i class="fas fa-times-circle text-lg"></i>
                                         </a>
                                     </td>
                                 </tr>

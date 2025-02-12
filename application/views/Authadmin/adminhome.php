@@ -71,7 +71,7 @@
                 <li class="search-box">
                     <!-- Search Icon: changed to a magnifying glass -->
                     <i class='bx bx-search-alt icon'></i>
-                    <input class="py-2 px-3 text-left text-small font-semibold  uppercase tracking-wider" type="search"
+                    <input class=" text-left text-small font-semibold  uppercase tracking-wider" type="search"
                         id="search-bar" placeholder="Search" oninput="filterTasks()">
                 </li>
                 <li class="nav-link">

@@ -94,19 +94,6 @@
 
 
 
-            <!-- Filter Buttons and Search Bar -->
-            <div class="buttons flex justify-between items-center mb-6">
-                <div class="flex gap-4">
-                    <button class="bg-purple-200 px-4 py-2 rounded hover:bg-purple-300 transition filter-btn"
-                        onclick="filterFiles('All')">All Files</button>
-                    <button class="bg-green-200 px-4 py-2 rounded hover:bg-green-300 transition filter-btn"
-                        onclick="filterFiles('Credential')">Credential</button>
-                    <button class="bg-yellow-200 px-4 py-2 rounded hover:bg-yellow-300 transition filter-btn"
-                        onclick="filterFiles('Mandatory')">Mandatory</button>
-                    <button class="bg-red-200 px-4 py-2 rounded hover:bg-red-300 transition filter-btn"
-                        onclick="filterFiles('Yearly Event')">Yearly Event</button>
-                </div>
-            </div>
 
             <!-- User Uploaded Files Table -->
             <div class="bg-white shadow-lg rounded-lg p-6 overflow-x-auto">
@@ -235,7 +222,34 @@
                                                     : '<span class="text-green-500">Credential</span>'); ?>
                                         </td>
                                         <td class="px-6 py-4"><?= ucfirst(htmlspecialchars($file['file_type'])) ?></td>
-                                        <td class="px-6 py-4"><?= ucfirst(htmlspecialchars($file['status'])) ?></td>
+
+                                        <td class="px-6 py-4">
+                                            <?php
+
+                                            $status = strtolower($file['status']);
+                                            $statusColor = 'text-gray-600 font-normal';
+
+                                            switch ($status) {
+                                                case 'approved':
+                                                    $statusColor = 'text-green-600 font-normal';
+                                                    break;
+                                                case 'denied':
+                                                    $statusColor = 'text-red-600 font-normal';
+                                                    break;
+                                                case 'pending':
+                                                    $statusColor = 'text-yellow-600 font-normal';
+                                                    break;
+                                            }
+                                            ?>
+                                            <span class="<?= $statusColor ?>">
+                                                <?= ucfirst(htmlspecialchars($file['status'])) ?>
+                                            </span>
+
+                                        </td>
+
+
+
+
                                         <td class="px-4 py-3"><?= date('F j, Y - g:i A', strtotime($file['uploaded_at'])) ?></td>
 
                                         <td class="px-4 py-3">
@@ -310,31 +324,68 @@
         </div>
     </div>
 
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <!-- Message Modal -->
     <div id="messageModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
         <div id="send_message_des" class="bg-white rounded-lg shadow-lg p-8 mx-96">
             <h2 class="text-2xl font-semibold mb-6 text-gray-800">Send a Message</h2>
-            <form class="" method="post" action="<?= base_url('conAdmin/sendMessage') ?>">
+            <form id="messageForm">
                 <input type="hidden" id="modalUserId" name="user_id">
-                <textarea name="message" rows="6"
+                <textarea name="message" id="messageInput" rows="6"
                     class="form-textarea mt-1 block w-full border border-gray-300 rounded-md p-4 text-gray-700"
                     placeholder="Enter message here"></textarea>
-                <div class="mt-3 justify-between flex">
-
+                <div class="mt-3 flex justify-between">
                     <button type="submit"
                         class="text-green-800 bg-green-200 hover:bg-green-400 py-2 px-4 rounded font-medium transition-all duration-300">
                         Send Message
                     </button>
-                    <button onclick="closeMessageModal()"
+                    <button type="button" onclick="closeMessageModal()"
                         class="bg-yellow-200 text-yellow-800 py-2 px-4 rounded hover:bg-yellow-400">Close</button>
                 </div>
-
             </form>
         </div>
     </div>
 
+    <script>
+        document.getElementById('messageForm').addEventListener('submit', function (event) {
+            event.preventDefault(); // Prevent default form submission
+
+            let user_id = document.getElementById('modalUserId').value;
+            let message = document.getElementById('messageInput').value;
+
+            if (!message.trim()) {
+                Swal.fire("Error", "Message cannot be empty!", "error");
+                return;
+            }
+
+            fetch("<?= base_url('conAdmin/sendMessage') ?>", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: `user_id=${user_id}&message=${encodeURIComponent(message)}`
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        Swal.fire("Success", data.message, "success");
+                        closeMessageModal(); // Close the modal after success
+                    } else {
+                        Swal.fire("Error", data.message, "error");
+                    }
+                })
+                .catch(error => Swal.fire("Error", "Something went wrong!", "error"));
+        });
+
+        function closeMessageModal() {
+            document.getElementById('messageModal').classList.add('hidden');
+        }
+    </script>
+
+
 
     <script>
+
         // Function to open the message modal
         function openMessageModal(userId) {
             document.getElementById('modalUserId').value = userId;

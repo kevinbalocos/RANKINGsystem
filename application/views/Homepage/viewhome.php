@@ -106,7 +106,7 @@
             <div class="menu">
                 <li class="search-box">
                     <i class='bx bx-search icon'></i>
-                    <input class="py-2 px-3 text-left text-small font-semibold  uppercase tracking-wider" type="search"
+                    <input class=" text-left text-small font-semibold  uppercase tracking-wider" type="search"
                         id="search-bar" placeholder="Search" oninput="filterTasks()">
                 </li>
                 <li class="nav-link">
@@ -177,6 +177,7 @@
                     </a>
 
                 </li>
+                
 
                 <li class="mode">
                     <div class="moon-sun">
@@ -195,7 +196,6 @@
 
     <section class="home">
         <!-- Navbar with Notification Icon -->
-        <!-- Navbar with Notification Icon -->
         <nav class="bg-white p-4 flex justify-between items-center">
             <div class="font-bold text-lg pl-10">Faculty Ranking and Data Management System for Academic Excellence
             </div>
@@ -212,77 +212,49 @@
                     </span>
                 </a>
 
-
                 <!-- Notification Dropdown -->
                 <div id="notificationDropdown"
                     class="notifications_design hidden absolute right-0 mt-2 w-192 bg-white shadow-lg rounded-lg z-10">
                     <div class="p-4">
-                        <h3 class="font-bold text-lg flex space-x-2 px-1 py-2 justify-between">Notifications
-                            <button class=" text-green-800 hover:bg-green-300 text-green-800 rounded px-2"
-                                onclick="markNotificationsRead()">Mark all as read</button>
-                            <!-- Delete All Notifications Button -->
-                            <button class="    text-red-800 hover:bg-red-300 rounded px-2 "
+                        <h3 class="font-bold text-lg flex space-x-2 px-1 py-2 justify-between">
+                            Notifications
+                            <button class="text-green-800 rounded px-2" onclick="markNotificationsRead()">Mark all as
+                                read</button>
+                            <button class="text-red-800 rounded px-2"
                                 onclick="deleteAll_ViewHome_Notifications()">Delete all notifications</button>
                         </h3>
-                        <ul class="mt-2">
-                            <?php foreach ($notifications as $notification): ?>
-                                <li class="bg-gray-100 p-2 mb-2 rounded flex justify-between items-center">
-                                    <div>
-                                        <p><?= htmlspecialchars($notification['message']) ?></p>
-                                        <p class="text-sm text-gray-500">
-                                            <?= date('F j, Y, g:i a', strtotime($notification['created_at'])) ?>
-                                        </p>
-                                    </div>
+
+                        <!-- Scrollable Notification List -->
+                        <ul class="mt-2 max-h-96 overflow-y-auto">
+                            <?php if (empty($notifications) && empty($notifications_rankup) && empty($notifications_requirements)): ?>
+                                <li class="bg-gray-50 p-3 rounded text-center text-gray-500">
+                                    No notifications yet
                                 </li>
-                            <?php endforeach; ?>
+                            <?php else: ?>
+                                <?php foreach ($notifications as $notification): ?>
+                                    <li class="bg-gray-100 p-2 mb-2 rounded flex justify-between items-center">
+                                        <div>
+                                            <p><?= htmlspecialchars($notification['message']) ?></p>
+                                            <p class="text-sm text-gray-500">
+                                                <?= date('F j, Y, g:i a', strtotime($notification['created_at'])) ?>
+                                            </p>
+                                        </div>
+                                    </li>
+                                <?php endforeach; ?>
 
-                            <!-- Notifications for Requirements -->
-                            <!-- <?php foreach ($notifications_requirements as $notification): ?>
-                                <li class="bg-gray-100 p-2 mb-2 rounded flex justify-between items-center">
-                                    <div>
-                                        <p><?= htmlspecialchars($notification['message']) ?></p>
-                                        <p class="text-sm text-gray-500">
-                                            <?= date('F j, Y, g:i a', strtotime($notification['created_at'])) ?>
-                                        </p>
-                                    </div>
-                                    <button onclick="deleteNotification(<?= $notification['id'] ?>, 'requirements')"
-                                        class="text-red-500 hover:text-red-700">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </li>
-                            <?php endforeach; ?> -->
-
-                            <!-- <?php foreach ($notifications_requirements as $notification): ?>
-                                <li class="bg-gray-100 p-2 mb-2 rounded flex justify-between items-center">
-                                    <div>
-                                        <p><?= htmlspecialchars($notification['message']) ?></p>
-                                        <p class="text-sm text-gray-500">
-                                            <?= date('F j, Y, g:i a', strtotime($notification['created_at'])) ?>
-                                        </p>
-                                    </div>
-                                </li>
-                            <?php endforeach; ?> -->
-
-
-                            <?php foreach ($notifications_rankup as $notification): ?>
-                                <li id="notification-<?= $notification['id'] ?>"
-                                    class="bg-gray-100 p-2 mb-2 rounded flex justify-between items-center">
-                                    <div>
-                                        <p><?= htmlspecialchars($notification['message']) ?></p>
-                                        <p class="text-sm text-gray-500">
-                                            <?= date('F j, Y, g:i a', strtotime($notification['created_at'])) ?>
-                                        </p>
-                                    </div>
-                                    <!-- <button onclick="deleteNotification(<?= $notification['id'] ?>, 'rankup')"
-                                        class="text-red-500 hover:text-red-700">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button> -->
-                                </li>
-                            <?php endforeach; ?>
-
-
+                                <?php foreach ($notifications_rankup as $notification): ?>
+                                    <li id="notification-<?= $notification['id'] ?>"
+                                        class="bg-gray-100 p-2 mb-2 rounded flex justify-between items-center">
+                                        <div>
+                                            <p><?= htmlspecialchars($notification['message']) ?></p>
+                                            <p class="text-sm text-gray-500">
+                                                <?= date('F j, Y, g:i a', strtotime($notification['created_at'])) ?>
+                                            </p>
+                                        </div>
+                                    </li>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
                         </ul>
-
 
                     </div>
                 </div>
@@ -291,106 +263,159 @@
         </nav>
 
         <script>
-            // Toggle the visibility of the notification dropdown
+            // Toggle Notification Dropdown
             function toggleDropdown() {
-                const dropdown = document.getElementById('notificationDropdown');
-                dropdown.classList.toggle('hidden');
+                document.getElementById('notificationDropdown').classList.toggle('hidden');
             }
 
-
-            // Mark all notifications as read
+            // Mark all notifications as read with validation
             function markNotificationsRead() {
+                let notificationCounter = document.getElementById('notificationCounter');
+                let unreadCount = parseInt(notificationCounter.innerText);
+
+                if (unreadCount === 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'No Unread Notifications',
+                        text: 'There are no unread notifications to mark as read.',
+                    });
+                    return;
+                }
+
                 fetch('<?= base_url('conAdmin/markNotificationsRead') ?>', {
                     method: 'POST',
                 })
                     .then(response => response.json())
                     .then(data => {
                         if (data.status === 'success') {
-                            // Close the dropdown
                             toggleDropdown();
+                            notificationCounter.innerText = '0';
+                            notificationCounter.style.display = 'none';
 
-                            // Update the notification counter
-                            document.getElementById('notificationCounter').innerText = '0'; // Set the counter to 0
-                            document.getElementById('notificationCounter').style.display = 'none'; // Hide if 0
-
-                            // Optionally, you can show a toast notification or alert the user here
-                            Toastify({
-                                text: "All notifications marked as read",
-                                backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
-                                duration: 3000
-                            }).showToast();
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: 'All notifications marked as read!',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
                         } else {
-                            alert('Error marking notifications as read');
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Failed to mark notifications as read!',
+                            });
                         }
                     });
             }
-            // Delete all notifications
+
+            // Delete all notifications with validation
             function deleteAll_ViewHome_Notifications() {
-                if (confirm("Are you sure you want to delete all notifications?")) {
-                    fetch('<?= base_url('conAdmin/deleteAll_ViewHome_Notifications') ?>', {
-                        method: 'POST',
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.status === 'success') {
-                                // Close the dropdown
-                                toggleDropdown();
+                let notificationList = document.querySelector('#notificationDropdown ul');
 
-                                // Clear the notification counter and hide it
-                                document.getElementById('notificationCounter').innerText = '0';
-                                document.getElementById('notificationCounter').style.display = 'none';
-
-                                // Optionally, show a success toast
-                                Toastify({
-                                    text: "All notifications deleted",
-                                    backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc3a0)",
-                                    duration: 3000
-                                }).showToast();
-
-                                // Optionally, clear the notifications list in the dropdown
-                                document.querySelector('#notificationDropdown ul').innerHTML = '';
-                            } else {
-                                alert('Error deleting notifications');
-                            }
-                        });
+                if (!notificationList || notificationList.children.length === 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'No Notifications',
+                        text: 'There are no notifications to delete.',
+                    });
+                    return;
                 }
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "This will delete all notifications permanently.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete all!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch('<?= base_url('conAdmin/deleteAll_ViewHome_Notifications') ?>', {
+                            method: 'POST',
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.status === 'success') {
+                                    toggleDropdown();
+                                    document.getElementById('notificationCounter').innerText = '0';
+                                    document.getElementById('notificationCounter').style.display = 'none';
+                                    notificationList.innerHTML = '';
+
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Deleted!',
+                                        text: 'All notifications have been deleted.',
+                                        timer: 2000,
+                                        showConfirmButton: false
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Error',
+                                        text: 'Failed to delete notifications!',
+                                    });
+                                }
+                            });
+                    }
+                });
             }
 
-            // Delete a notification
+            // Delete a single notification with validation
             function deleteNotification(notificationId, notificationType = 'requirements') {
-                fetch('<?= base_url('conAdmin/delete_viewhome_notifications') ?>', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        notification_id: notificationId,
-                        notification_type: notificationType
-                    }),
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status === 'success') {
-                            // Remove the deleted notification from the UI
-                            const notificationElement = document.getElementById('notification-' + notificationId);
-                            if (notificationElement) {
-                                notificationElement.remove();
-                            }
+                let notificationElement = document.getElementById('notification-' + notificationId);
 
-                            // Update the notification counter
-                            document.getElementById('notificationCounter').innerText = data.unread_notifications;
-
-                            // Optionally, show a success message
-                            Toastify({
-                                text: "Notification deleted successfully",
-                                backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc3a0)",
-                                duration: 3000,
-                                position: "bottom-right"
-                            }).showToast();
-                        } else {
-                            alert('Error deleting notification');
-                        }
+                if (!notificationElement) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Notification Not Found',
+                        text: 'This notification has already been deleted or does not exist.',
                     });
+                    return;
+                }
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "This notification will be permanently deleted.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch('<?= base_url('conAdmin/delete_viewhome_notifications') ?>', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                notification_id: notificationId,
+                                notification_type: notificationType
+                            }),
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.status === 'success') {
+                                    notificationElement.remove();
+                                    document.getElementById('notificationCounter').innerText = data.unread_notifications;
+
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Deleted!',
+                                        text: 'Notification has been removed.',
+                                        timer: 2000,
+                                        showConfirmButton: false
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Error',
+                                        text: 'Failed to delete notification!',
+                                    });
+                                }
+                            });
+                    }
+                });
             }
 
 

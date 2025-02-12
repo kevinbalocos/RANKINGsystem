@@ -705,11 +705,22 @@ class conAdmin extends CI_Controller
 
         // Update all unread notifications to 'read'
         $this->db->where(['user_id' => $user_id, 'status' => 'unread']);
-        $this->db->where('user_id', $user_id)->update('notifications_requirements', ['status' => 'read']);
-        $this->db->where('user_id', $user_id)->update('notifications_faculty_rankup', ['status' => 'read']);
+        $this->db->update('notifications_requirements', ['status' => 'read']);
+
+        $this->db->where(['user_id' => $user_id, 'status' => 'unread']);
+        $this->db->update('notifications_faculty_rankup', ['status' => 'read']);
+
+        $this->db->where(['user_id' => $user_id, 'status' => 'unread']);
+        $this->db->update('notification_message_the_user', ['status' => 'read']);
 
         // Get the number of remaining unread notifications
-        $unread_notifications = $this->db->where(['user_id' => $user_id, 'status' => 'unread'])->count_all_results('notifications_requirements');
+        $unread_notifications = $this->db
+            ->where(['user_id' => $user_id, 'status' => 'unread'])
+            ->count_all_results('notifications_requirements') +
+            $this->db->where(['user_id' => $user_id, 'status' => 'unread'])
+                ->count_all_results('notifications_faculty_rankup') +
+            $this->db->where(['user_id' => $user_id, 'status' => 'unread'])
+                ->count_all_results('notification_message_the_user');
 
         // Respond with success
         echo json_encode([
@@ -738,23 +749,25 @@ class conAdmin extends CI_Controller
     {
         $user_id = $this->session->userdata('user_id');
 
-        // Delete all notifications for the user
-        $this->db->where('user_id', $user_id);
-        $deleted_requirements = $this->db->delete('notifications_requirements');
-        $deleted_rankup = $this->db->where('user_id', $user_id)->delete('notifications_faculty_rankup');
-
-        if ($deleted_requirements && $deleted_rankup) {
-            echo json_encode([
-                'status' => 'success',
-                'message' => 'All notifications deleted.'
-            ]);
-        } else {
+        if (!$user_id) {
             echo json_encode([
                 'status' => 'error',
-                'message' => 'Failed to delete notifications.'
+                'message' => 'User not logged in'
             ]);
+            return;
         }
+
+        // Delete all notifications from all related tables
+        $this->db->where('user_id', $user_id)->delete('notifications_requirements');
+        $this->db->where('user_id', $user_id)->delete('notifications_faculty_rankup');
+        $this->db->where('user_id', $user_id)->delete('notification_message_the_user'); // Added this line
+
+        echo json_encode([
+            'status' => 'success',
+            'message' => 'All notifications deleted.'
+        ]);
     }
+
 
 
     public function delete_viewhome_notifications()
@@ -1199,36 +1212,44 @@ class conAdmin extends CI_Controller
     }
     public function sendMessage()
     {
-        // Ensure the admin is logged in
+        // Ensure admin is logged in
         if (!$this->session->userdata('admin_id')) {
-            show_error("Unauthorized access", 403, "Access Denied");
+            echo json_encode(['status' => 'error', 'message' => 'Unauthorized access.']);
             return;
         }
 
-        // Retrieve data from the form submission
+        // Get input
         $user_id = $this->input->post('user_id');
         $message = $this->input->post('message');
 
-        // Check if the message is not empty
-        if (empty($message)) {
-            $this->session->set_flashdata('error', 'Message cannot be empty.');
-            redirect('conAdmin'); // Redirect back to the User Uploaded Files page
+        // Validate message
+        if (empty(trim($message))) {
+            echo json_encode(['status' => 'error', 'message' => 'Message cannot be empty.']);
+            return;
         }
 
-        // Insert the message into the notifications table
+        // Insert message into the database
         $notification_data = [
             'user_id' => $user_id,
             'message' => $message,
             'created_at' => date('Y-m-d H:i:s'),
-            'status' => 'unread' // Set the initial status to unread
+            'status' => 'unread'
         ];
 
         $this->db->insert('notification_message_the_user', $notification_data);
 
-        // Set a success message and redirect back to the files page
-        $this->session->set_flashdata('success', 'Message sent successfully!');
-        redirect('conAdmin');
+        // Count unread notifications
+        $this->db->where(['user_id' => $user_id, 'status' => 'unread']);
+        $unread_notifications = $this->db->count_all_results('notification_message_the_user');
+
+        // Return JSON response
+        echo json_encode([
+            'status' => 'success',
+            'message' => 'Message sent successfully!',
+            'unread_notifications' => $unread_notifications
+        ]);
     }
+
 
     public function bulkUpdateFileStatus()
     {

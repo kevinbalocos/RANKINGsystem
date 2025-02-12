@@ -21,9 +21,38 @@ class Auth_model extends CI_Model
             return false;
         }
     }
+
+    // In the model
+
+    public function getPendingAdmins()
+    {
+        $query = $this->db->get_where('admin', ['status' => 'pending']);
+        return $query->result_array();
+    }
+
+    public function getAdminsByStatus($status)
+    {
+        $query = $this->db->get_where('admin', ['status' => $status]);
+        return $query->result_array();
+    }
+
+    public function updateAdminStatus($admin_id, $status)
+    {
+        $this->db->where('admin_id', $admin_id);
+        return $this->db->update('admin', ['status' => $status]);
+    }
+
+
+
     public function getAdminByEmail($email)
     {
         $query = $this->db->get_where('admin', ['email' => $email]);
+        return $query->row_array();
+    }
+
+    public function getAdminById($admin_id)
+    {
+        $query = $this->db->get_where('admin', ['admin_id' => $admin_id]);
         return $query->row_array();
     }
 

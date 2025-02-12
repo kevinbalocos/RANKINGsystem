@@ -21,7 +21,7 @@ class Auth extends CI_Controller
             'protocol' => 'smtp',
             'smtp_host' => 'ssl://smtp.gmail.com',
             'smtp_port' => 465,
-            'smtp_user' => 'erankingsystem@gmail.com', // Your email
+            'smtp_user' => 'erankingsystem@gmail.com',
             'smtp_pass' => 'xcgs aayk sabg smwd',
             'mailtype' => 'html',
             'charset' => 'utf-8',
@@ -32,40 +32,58 @@ class Auth extends CI_Controller
 
     }
 
-
-
+    // In the controller
 
     public function manage_users()
     {
         $data['pending_users'] = $this->auth_model->getPendingUsers();
         $data['approved_users'] = $this->auth_model->getUsersByStatus('approved');
         $data['rejected_users'] = $this->auth_model->getUsersByStatus('rejected');
+        $data['pending_admins'] = $this->auth_model->getPendingAdmins();
+        $data['approved_admins'] = $this->auth_model->getAdminsByStatus('approved');
+        $data['rejected_admins'] = $this->auth_model->getAdminsByStatus('rejected');
+
         $this->load->view('adminHomepage/approve_users_account', $data);
     }
 
-    public function approve_user()
+    public function approve_admin()
     {
-        $user_id = $this->input->post('user_id');
-        $user = $this->auth_model->getUserById($user_id);
+        $admin_id = $this->input->post('admin_id');
 
-        if ($user) {
-            $this->auth_model->updateUserStatus($user_id, 'approved');
+        if (!$admin_id) {
+            echo json_encode(['status' => 'error', 'message' => 'Admin ID is missing']);
+            return;
+        }
+
+        $admin = $this->auth_model->getAdminById($admin_id);
+
+        if ($admin) {
+            $this->auth_model->updateAdminStatus($admin_id, 'approved');
 
             // Send approval email
-            $subject = "Account Approved - Welcome to Our Platform!";
-            $message = "
-            <html>
-            <body>
-                <p>Dear " . $user['username'] . ",</p>
-                <p>We are pleased to inform you that your account has been successfully approved. You can now log in and start using our platform. Please use your credentials to access all the features we offer.</p>
-                <p>If you have any questions or need assistance, feel free to reach out to us. We are here to help!</p>
-                <p>Thank you for your patience and for choosing us!</p>
-                <br>
-                <p>Best regards,</p>
-                <p>The Team</p>
-            </body>
-            </html>";
-            $this->send_email($user['email'], $subject, $message);
+            $subject = "Admin Account Approved!";
+            $message = "Dear " . $admin['username'] . ", your admin account has been approved!";
+            $this->send_email($admin['email'], $subject, $message);
+
+            echo json_encode(['status' => 'success']);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Admin not found']);
+        }
+    }
+
+
+    public function reject_admin()
+    {
+        $admin_id = $this->input->post('admin_id');
+        $admin = $this->auth_model->getAdminById($admin_id);
+
+        if ($admin) {
+            $this->auth_model->updateAdminStatus($admin_id, 'rejected');
+
+            // Send rejection email
+            $subject = "Admin Registration Rejected";
+            $message = "Dear " . $admin['username'] . ", your admin account request has been rejected.";
+            $this->send_email($admin['email'], $subject, $message);
 
             echo json_encode(['status' => 'success']);
         } else {
@@ -74,6 +92,28 @@ class Auth extends CI_Controller
     }
 
 
+    // Approve user method
+    public function approve_user()
+    {
+        $user_id = $this->input->post('user_id');
+        $user = $this->auth_model->getUserById($user_id);
+
+        if ($user) {
+            // Approve user or admin
+            $this->auth_model->updateUserStatus($user_id, 'approved');
+
+            // Send approval email
+            $subject = "Account Approved - Welcome to Our Platform!";
+            $message = "Dear " . $user['username'] . ", your account has been approved!";
+            $this->send_email($user['email'], $subject, $message);
+
+            echo json_encode(['status' => 'success']);
+        } else {
+            echo json_encode(['status' => 'error']);
+        }
+    }
+
+    // Reject user method
     public function reject_user()
     {
         $user_id = $this->input->post('user_id');
@@ -84,18 +124,7 @@ class Auth extends CI_Controller
 
             // Send rejection email
             $subject = "Account Registration Status - Action Required";
-            $message = "
-            <html>
-            <body>
-                <p>Dear " . $user['username'] . ",</p>
-                <p>We regret to inform you that your account registration has not been approved at this time. While we appreciate your interest in our platform, we were unable to process your account at this stage.</p>
-                <p>If you have any questions or wish to discuss this further, please do not hesitate to contact our support team. We value your time and will be happy to assist you in any way we can.</p>
-                <p>Thank you for understanding, and we hope to have the opportunity to assist you again in the future.</p>
-                <br>
-                <p>Best regards,</p>
-                <p>The Team</p>
-            </body>
-            </html>";
+            $message = "Dear " . $user['username'] . ", your account has been rejected.";
             $this->send_email($user['email'], $subject, $message);
 
             echo json_encode(['status' => 'success']);
@@ -104,7 +133,21 @@ class Auth extends CI_Controller
         }
     }
 
+    public function Admin_move_to_pending()
+    {
+        $admin_id = $this->input->post('admin_id');
+        $admin = $this->auth_model->getAdminById($admin_id);
 
+        if ($admin) {
+            $this->auth_model->updateAdminStatus($admin_id, 'pending');
+            echo json_encode(['status' => 'success']);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Admin not found']);
+        }
+    }
+
+
+    // Move to pending
     public function move_to_pending()
     {
         $user_id = $this->input->post('user_id');
@@ -117,6 +160,8 @@ class Auth extends CI_Controller
             echo json_encode(['status' => 'error']);
         }
     }
+
+
 
 
 

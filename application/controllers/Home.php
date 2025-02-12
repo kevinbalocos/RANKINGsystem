@@ -27,6 +27,7 @@ class Home extends CI_Controller
             $username = $this->session->userdata('username');
         }
 
+
         $user_id = $this->session->userdata('user_id');
 
         // Ensure user ID is available
@@ -64,7 +65,13 @@ class Home extends CI_Controller
         $unread_notifications_rankup = $this->db->where(['user_id' => $user_id, 'status' => 'unread'])->count_all_results('notifications_faculty_rankup');
 
         // Include the unread notifications for both
-        $data['unread_notifications'] = $unread_notifications_rankup + $unread_notifications_requirements;
+        // Fetch unread notifications count for messages
+        $unread_notifications_messages = $this->db
+            ->where(['user_id' => $user_id, 'status' => 'unread'])
+            ->count_all_results('notification_message_the_user');
+
+        // Total unread notifications count
+        $data['unread_notifications'] = $unread_notifications_rankup + $unread_notifications_requirements + $unread_notifications_messages;
 
         // Load the view and pass the data
         $data['username'] = $username;
@@ -143,8 +150,16 @@ class Home extends CI_Controller
 
     public function logout()
     {
+        // Destroy session
         $this->session->sess_destroy();
-        redirect(base_url('auth'));
+
+        // Prevent back button from revisiting the page
+        header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+        header("Cache-Control: post-check=0, pre-check=0", false);
+        header("Pragma: no-cache");
+
+        // Redirect to login
+        redirect('auth');
     }
 
 

@@ -411,6 +411,7 @@ body {
 
 ::-webkit-scrollbar {
     width:5px;
+    width: 100%;
 }
 
 ::-webkit-scrollbar-thumb {

@@ -386,12 +386,12 @@ overflow-y: scroll; /* Keeps the right scrollbar */
 
 
 ::-webkit-scrollbar {
-width:5px;
+width:10px;
+max-width: 100%;
 }
 
 ::-webkit-scrollbar-thumb {
 background-color: #66cdaa; 
-border-radius: 10px;
 }
 
 ::-webkit-scrollbar-track {

@@ -7,26 +7,32 @@
     <title>Approve User</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>
+<style>
         .main-container {
             display: flex;
             flex-wrap: wrap;
-            gap: 1.5rem;
+            gap: 1rem;
         }
 
         .section {
             background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 0.75rem;
             flex: 1;
-            min-width: 280px;
+            min-width: 220px;
             overflow-y: auto;
+            transition: transform 0.3s ease;
+        }
+
+        .section:hover {
+            transform: scale(1.02);
         }
 
         .section-header {
-            padding-bottom: 1rem;
-            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            margin-bottom: 0.5rem;
         }
 
         table {
@@ -36,13 +42,13 @@
 
         table th,
         table td {
-            padding: 0.75rem;
+            padding: 0.5rem;
             text-align: left;
-            font-size: 0.875rem;
+            font-size: 0.75rem;
         }
 
         table th {
-            background-color: #f3f4f6;
+            background-color: #f9fafb;
             font-weight: bold;
             text-transform: uppercase;
             color: #4b5563;
@@ -54,9 +60,12 @@
 
         .action-links a {
             font-weight: 500;
-            padding: 0.5rem 1rem;
+            padding: 0.25rem 0.5rem;
             border-radius: 0.375rem;
             transition: background-color 0.3s;
+            display: inline-block;
+            margin-top: 0.25rem;
+            font-size: 0.75rem;
         }
 
         .action-links .approve {
@@ -92,12 +101,12 @@
 </head>
 
 <body class="bg-gray-100 font-sans">
-    <div class="p-6">
-        <div class="main-container">
+    <div class="p-4 max-w-full mx-auto">
+        <div class="main-container grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <!-- Pending Users Table -->
             <div class="section">
                 <div class="section-header">
-                    <h2 class="text-2xl font-semibold text-gray-600">Pending Users</h2>
+                    <h2 class="text-lg font-semibold text-gray-600">Pending Users</h2>
                 </div>
                 <table>
                     <thead>
@@ -109,14 +118,14 @@
                     </thead>
                     <tbody>
                         <?php foreach ($pending_users as $user): ?>
-                            <tr>
-                                <td><?= $user['username'] ?></td>
-                                <td><?= $user['email'] ?></td>
-                                <td class="action-links">
-                                    <a href="#" class="approve" onclick="approveUser(<?= $user['id'] ?>)">Approve</a> |
-                                    <a href="#" class="reject" onclick="rejectUser(<?= $user['id'] ?>)">Reject</a>
-                                </td>
-                            </tr>
+                                <tr>
+                                    <td><?= $user['username'] ?></td>
+                                    <td><?= $user['email'] ?></td>
+                                    <td class="action-links">
+                                        <a href="#" class="approve" onclick="approveUser(<?= $user['id'] ?>)">Approve</a> |
+                                        <a href="#" class="reject" onclick="rejectUser(<?= $user['id'] ?>)">Reject</a>
+                                    </td>
+                                </tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
@@ -124,7 +133,7 @@
 
             <div class="section">
                 <div class="section-header">
-                    <h2 class="text-2xl font-semibold text-gray-600">Approved Users</h2>
+                    <h2 class="text-lg font-semibold text-gray-600">Approved Users</h2>
                 </div>
                 <table>
                     <thead>
@@ -137,14 +146,14 @@
                     </thead>
                     <tbody>
                         <?php foreach ($approved_users as $user): ?>
-                            <tr>
-                                <td><?= $user['id'] ?></td>
-                                <td><?= $user['username'] ?></td>
-                                <td><?= $user['email'] ?></td>
-                                <td class="action-links">
-                                    <a href="#" class="move" onclick="moveToPending(<?= $user['id'] ?>)">Move to Pending</a>
-                                </td>
-                            </tr>
+                                <tr>
+                                    <td><?= $user['id'] ?></td>
+                                    <td><?= $user['username'] ?></td>
+                                    <td><?= $user['email'] ?></td>
+                                    <td class="action-links">
+                                        <a href="#" class="move" onclick="moveToPending(<?= $user['id'] ?>)">Move to Pending</a>
+                                    </td>
+                                </tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
@@ -152,7 +161,7 @@
 
             <div class="section">
                 <div class="section-header">
-                    <h2 class="text-2xl font-semibold text-gray-600">Rejected Users</h2>
+                    <h2 class="text-lg font-semibold text-gray-600">Rejected Users</h2>
                 </div>
                 <table>
                     <thead>
@@ -165,22 +174,161 @@
                     </thead>
                     <tbody>
                         <?php foreach ($rejected_users as $user): ?>
-                            <tr>
-                                <td><?= $user['id'] ?></td>
-                                <td><?= $user['username'] ?></td>
-                                <td><?= $user['email'] ?></td>
-                                <td class="action-links">
-                                    <a href="#" class="move" onclick="moveToPending(<?= $user['id'] ?>)">Move to Pending</a>
-                                </td>
-                            </tr>
+                                <tr>
+                                    <td><?= $user['id'] ?></td>
+                                    <td><?= $user['username'] ?></td>
+                                    <td><?= $user['email'] ?></td>
+                                    <td class="action-links">
+                                        <a href="#" class="move" onclick="moveToPending(<?= $user['id'] ?>)">Move to Pending</a>
+                                    </td>
+                                </tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
+
+
             </div>
         </div>
     </div>
+    <!-- Pending Admins Table -->
+    <div class="section">
+        <div class="section-header">
+            <h2 class="text-lg font-semibold text-gray-600">Pending Admins</h2>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($pending_admins as $admin): ?>
+                        <tr>
+                            <td><?= $admin['username'] ?></td>
+                            <td><?= $admin['email'] ?></td>
+                            <td class="action-links">
+                                <a href="#" class="approve" onclick="approveAdmin(<?= $admin['admin_id'] ?>)">Approve</a>
+                                <a href="#" class="reject" onclick="rejectAdmin(<?= $admin['admin_id'] ?>)">Reject</a>
+
+
+                            </td>
+                        </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Approved Admins Table -->
+    <div class="section">
+        <div class="section-header">
+            <h2 class="text-lg font-semibold text-gray-600">Approved Admins</h2>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($approved_admins as $admin): ?>
+                        <tr>
+                            <td><?= $admin['username'] ?></td>
+                            <td><?= $admin['email'] ?></td>
+                            <td class="action-links">
+                                <a href="#" class="move-to-pending" onclick="moveToPending(<?= $admin['admin_id'] ?>)">Move to
+                                    Pending</a>
+                            </td>
+                        </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+
+
+    <!-- Rejected Admins Table -->
+    <div class="section">
+        <div class="section-header">
+            <h2 class="text-lg font-semibold text-gray-600">Rejected Admins</h2>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($rejected_admins as $admin): ?>
+                        <tr>
+                            <td><?= $admin['username'] ?></td>
+                            <td><?= $admin['email'] ?></td>
+                            <td class="action-links">
+                                <a href="#" class="move-to-pending" onclick="AdminmoveToPending(<?= $admin['admin_id'] ?>)">Move
+                                    to
+                                    Pending</a>
+                            </td>
+                        </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+
+
 
     <script>
+        function AdminmoveToPending(adminId) {
+            $.ajax({
+                url: "<?= base_url('auth/Admin_move_to_pending') ?>",
+                method: "POST",
+                data: { admin_id: adminId },
+                success: function (response) {
+                    Swal.fire('Moved to Pending!', 'The admin has been moved to pending.', 'success').then(() => {
+                        location.reload();
+                    });
+                },
+                error: function () {
+                    Swal.fire('Error!', 'There was an error moving the admin to pending.', 'error');
+                }
+            });
+        }
+
+        function approveAdmin(adminId) {
+            $.ajax({
+                url: "<?= base_url('auth/approve_admin') ?>",
+                method: "POST",
+                data: { admin_id: adminId },
+                success: function (response) {
+                    Swal.fire('Approved!', 'The admin has been approved.', 'success').then(() => {
+                        location.reload();
+                    });
+                },
+                error: function () {
+                    Swal.fire('Error!', 'There was an error approving the admin.', 'error');
+                }
+            });
+        }
+
+        function rejectAdmin(adminId) {
+            $.ajax({
+                url: "<?= base_url('auth/reject_admin') ?>",
+                method: "POST",
+                data: { admin_id: adminId },
+                success: function (response) {
+                    Swal.fire('Rejected!', 'The admin has been rejected.', 'success').then(() => {
+                        location.reload();
+                    });
+                },
+                error: function () {
+                    Swal.fire('Error!', 'There was an error rejecting the admin.', 'error');
+                }
+            });
+        }
+
         function approveUser(userId) {
             Swal.fire({
                 title: 'Are you sure?',
@@ -191,25 +339,23 @@
                 cancelButtonText: 'Cancel'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Show loading spinner while processing
                     Swal.fire({
                         title: 'Processing...',
                         text: 'Please wait while we process your request.',
                         showConfirmButton: false,
                         allowOutsideClick: false,
                         didOpen: () => {
-                            Swal.showLoading(); // Show loading spinner
+                            Swal.showLoading();
                         }
                     });
 
-                    // AJAX request to approve user
                     $.ajax({
                         url: "<?= base_url('auth/approve_user') ?>",
                         method: "POST",
                         data: { user_id: userId },
                         success: function (response) {
                             Swal.fire('Approved!', 'The user has been approved.', 'success').then(() => {
-                                location.reload(); // Reload the page after success
+                                location.reload();
                             });
                         },
                         error: function () {
@@ -219,6 +365,7 @@
                 }
             });
         }
+
 
         function rejectUser(userId) {
             Swal.fire({
@@ -230,25 +377,23 @@
                 cancelButtonText: 'Cancel'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Show loading spinner while processing
                     Swal.fire({
                         title: 'Processing...',
                         text: 'Please wait while we process your request.',
                         showConfirmButton: false,
                         allowOutsideClick: false,
                         didOpen: () => {
-                            Swal.showLoading(); // Show loading spinner
+                            Swal.showLoading();
                         }
                     });
 
-                    // AJAX request to reject user
                     $.ajax({
                         url: "<?= base_url('auth/reject_user') ?>",
                         method: "POST",
                         data: { user_id: userId },
                         success: function (response) {
                             Swal.fire('Rejected!', 'The user has been rejected.', 'success').then(() => {
-                                location.reload(); // Reload the page after success
+                                location.reload();
                             });
                         },
                         error: function () {
@@ -269,25 +414,23 @@
                 cancelButtonText: 'Cancel'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Show loading spinner while processing
                     Swal.fire({
                         title: 'Processing...',
                         text: 'Please wait while we process your request.',
                         showConfirmButton: false,
                         allowOutsideClick: false,
                         didOpen: () => {
-                            Swal.showLoading(); // Show loading spinner
+                            Swal.showLoading();
                         }
                     });
 
-                    // AJAX request to move user to pending
                     $.ajax({
                         url: "<?= base_url('auth/move_to_pending') ?>",
                         method: "POST",
                         data: { user_id: userId },
                         success: function (response) {
                             Swal.fire('Moved!', 'The user has been moved to pending.', 'success').then(() => {
-                                location.reload(); // Reload the page after success
+                                location.reload();
                             });
                         },
                         error: function () {
